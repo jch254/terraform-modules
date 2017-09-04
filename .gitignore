@@ -1,0 +1,8 @@
+.history/
+.terraform/
+.DS_Store
+.vscode/
+test.tf*
+dist/
+*.tfstate*
+*.tfplan*
