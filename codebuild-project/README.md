@@ -1,4 +1,4 @@
-# Build-pipeline
+# CodeBuild-project
 
 Insert overview of module here...
 
