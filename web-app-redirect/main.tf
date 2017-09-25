@@ -27,7 +27,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   price_class = "PriceClass_All"
 
   origin {
-    domain_name = "${aws_s3_bucket.apex_bucket.website_endpoint}"
+    domain_name = "${aws_s3_bucket.redirect_bucket.website_endpoint}"
     origin_id = "redirect_bucket_origin"
 
     custom_origin_config {
@@ -70,7 +70,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 }
 
-resource "aws_route53_record" "apex_route53_record" {
+resource "aws_route53_record" "redirect_route53_record" {
   zone_id = "${var.route53_zone_id}"
   name = "${var.source_dns_name}"
   type = "A"
