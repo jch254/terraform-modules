@@ -4,27 +4,27 @@ variable "name" {
 
 variable "artifact_path" {
   description = "Path to the Lambda function's artifact. Cannot be used with artifacts_dir variable."
-  default = ""
+  default     = ""
 }
 
 variable "artifact_base64sha256" {
   description = "Base64-encoded representation of raw SHA-256 sum of the Lambda function's artifact. Cannot be used with artifacts_dir variable."
-  default = ""
+  default     = ""
 }
 
 variable "artifacts_dir" {
   description = "Path to folder containing Lambda function's artifacts. Directory contents will be zipped. Cannot be used with artifact_path and artifact_base64sha256 variables."
-  default = ""
+  default     = ""
 }
 
 variable "deployment_s3_bucket" {
   description = "The S3 bucket where the Lambda function will be deployed. If not provided an S3 bucket will be created."
-  default = ""
+  default     = ""
 }
 
 variable "log_retention" {
   description = "Specifies the number of days to retain log events"
-  default = 7
+  default     = 7
 }
 
 variable "runtime" {
@@ -41,26 +41,26 @@ variable "handler" {
 
 variable "description" {
   description = "Description of what the Lambda Function does"
-  default = ""
+  default     = ""
 }
 
 variable "memory_size" {
   description = "Amount of memory in MB the Lambda Function can use at runtime"
-  default = 128
+  default     = 128
 }
 
 variable "timeout" {
   description = "Amount of time in seconds the Lambda Function has to run"
-  default = 60
+  default     = 60
 }
 
 variable "environment_variables" {
   description = "A map that defines environment variables for the Lambda function. E.g. [{ variables = { NAME = VALUE } }]"
-  type = "list"
-  default = []
+  type        = "list"
+  default     = []
 }
 
 variable "schedule_expression" {
   description = "A valid rate or cron expression - see: http://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-expressions.html"
-  default = ""
+  default     = ""
 }

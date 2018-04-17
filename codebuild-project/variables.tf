@@ -4,7 +4,7 @@ variable "name" {
 
 variable "log_retention" {
   description = "Specifies the number of days to retain build log events"
-  default = 7
+  default     = 7
 }
 
 variable "codebuild_role_arn" {
@@ -13,7 +13,7 @@ variable "codebuild_role_arn" {
 
 variable "build_compute_type" {
   description = "CodeBuild compute type (e.g. BUILD_GENERAL1_SMALL)"
-  default = "BUILD_GENERAL1_SMALL"
+  default     = "BUILD_GENERAL1_SMALL"
 }
 
 variable "build_docker_image" {
@@ -26,7 +26,7 @@ variable "build_docker_tag" {
 
 variable "privileged_mode" {
   description = "If set to true, enables running the Docker daemon inside a Docker container"
-  default = "false"
+  default     = "false"
 }
 
 variable "source_type" {
