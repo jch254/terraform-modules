@@ -4,5 +4,4 @@ A good practice is to create a repository containing common infrastructure compo
 
 ### TODO
 
-- Add module readmes
 - Add more modules
