@@ -4,14 +4,14 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
-| acm_arn | ARN of ACM SSL certificate for source DNS name | string | - | yes |
-| destination_dns_name | DNS name to redirect to (e.g. exampled.com) | string | - | yes |
-| route53_zone_id | Route 53 Hosted Zone ID for source DNS name | string | - | yes |
-| source_dns_name | DNS Name to redirect from (e.g. source.example.com) | string | - | yes |
+| acm\_arn | ARN of ACM SSL certificate for source DNS name | string | n/a | yes |
+| destination\_dns\_name | DNS name to redirect to (e.g. exampled.com) | string | n/a | yes |
+| route53\_zone\_id | Route 53 Hosted Zone ID for source DNS name | string | n/a | yes |
+| source\_dns\_name | DNS Name to redirect from (e.g. source.example.com) | string | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| cloudfront_distribution_id |  |
-| s3_bucket_id |  |
+| cloudfront\_distribution\_id |  |
+| s3\_bucket\_id |  |

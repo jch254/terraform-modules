@@ -4,14 +4,14 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
-| acm_arn | ARN of ACM SSL certificate | string | - | yes |
-| bucket_name | Name of deployment S3 bucket | string | - | yes |
-| dns_names | List of DNS names for app | list | - | yes |
-| route53_zone_id | Route 53 Hosted Zone ID | string | - | yes |
+| acm\_arn | ARN of ACM SSL certificate | string | n/a | yes |
+| bucket\_name | Name of deployment S3 bucket | string | n/a | yes |
+| dns\_names | List of DNS names for app | list | n/a | yes |
+| route53\_zone\_id | Route 53 Hosted Zone ID | string | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| cloudfront_distribution_id |  |
-| s3_bucket_id |  |
+| cloudfront\_distribution\_id |  |
+| s3\_bucket\_id |  |

@@ -72,3 +72,8 @@ variable "approval_comment" {
   description = "Comment to include in approval notifications. Required if require_approval is true."
   default     = "A production deploy has been requested."
 }
+
+variable "cache_bucket" {
+  description = "S3 bucket to use as build cache, the value must be a valid S3 bucket name/prefix"
+  default     = ""
+}

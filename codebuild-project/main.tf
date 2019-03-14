@@ -24,4 +24,9 @@ resource "aws_codebuild_project" "codebuild_project" {
     buildspec = "${var.buildspec}"
     location  = "${var.source_location}"
   }
+
+  cache {
+    type     = "${var.cache_bucket == "" ? "NO_CACHE" : "S3"}"
+    location = "${var.cache_bucket}"
+  }
 }

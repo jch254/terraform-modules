@@ -23,6 +23,11 @@ resource "aws_codebuild_project" "codebuild_project" {
     type      = "CODEPIPELINE"
     buildspec = "${var.buildspec}"
   }
+
+  cache {
+    type     = "${var.cache_bucket == "" ? "NO_CACHE" : "S3"}"
+    location = "${var.cache_bucket}"
+  }
 }
 
 resource "aws_s3_bucket" "artifacts" {

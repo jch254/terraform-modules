@@ -40,3 +40,8 @@ variable "buildspec" {
 variable "source_location" {
   description = "HTTPS URL of CodeCommit repo or S3 bucket to use as project source"
 }
+
+variable "cache_bucket" {
+  description = "S3 bucket to use as build cache, the value must be a valid S3 bucket name/prefix"
+  default     = ""
+}
