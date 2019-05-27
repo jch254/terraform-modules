@@ -1,3 +1,3 @@
-output "function_arn" {
-  value = "${aws_lambda_function.function.arn}"
+output "function" {
+  value = aws_lambda_function.function
 }

@@ -1,37 +1,37 @@
 resource "aws_cloudwatch_log_group" "codebuild_lg" {
   name              = "/aws/codebuild/${var.name}"
-  retention_in_days = "${var.log_retention}"
+  retention_in_days = var.log_retention
 }
 
 resource "aws_codebuild_project" "codebuild_project" {
-  name         = "${var.name}"
+  name         = var.name
   description  = "Builds, tests and deploys ${var.name}"
-  service_role = "${var.codebuild_role_arn}"
+  service_role = var.codebuild_role_arn
 
   artifacts {
     type = "CODEPIPELINE"
   }
 
   environment {
-    compute_type    = "${var.build_compute_type}"
+    compute_type    = var.build_compute_type
     image           = "${var.build_docker_image}:${var.build_docker_tag}"
     type            = "LINUX_CONTAINER"
-    privileged_mode = "${var.privileged_mode}"
+    privileged_mode = var.privileged_mode
   }
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = "${var.buildspec}"
+    buildspec = var.buildspec
   }
 
   cache {
-    type     = "${var.cache_bucket == "" ? "NO_CACHE" : "S3"}"
-    location = "${var.cache_bucket}"
+    type     = var.cache_bucket == "" ? "NO_CACHE" : "S3"
+    location = var.cache_bucket
   }
 }
 
 resource "aws_s3_bucket" "artifacts" {
-  count = "${var.artifact_store_s3_bucket == "" ? 1 : 0}"
+  count = var.artifact_store_s3_bucket == "" ? 1 : 0
 
   bucket        = "${var.name}-artifacts"
   acl           = "private"
@@ -39,14 +39,14 @@ resource "aws_s3_bucket" "artifacts" {
 }
 
 resource "aws_codepipeline" "codepipeline" {
-  count = "${var.require_approval == "false" ? 1 : 0}"
+  count = var.require_approval == "false" ? 1 : 0
 
-  name     = "${var.name}"
-  role_arn = "${var.codepipeline_role_arn}"
+  name     = var.name
+  role_arn = var.codepipeline_role_arn
 
   artifact_store {
-    location = "${coalesce(var.artifact_store_s3_bucket, join("", aws_s3_bucket.artifacts.*.bucket))}"
-    type     = "S3"
+    location = var.artifact_store_s3_bucket !== "" var.artifact_store_s3_bucket : aws_s3_bucket.artifacts[0].id
+    type = "S3"
   }
 
   stage {
@@ -60,11 +60,11 @@ resource "aws_codepipeline" "codepipeline" {
       version          = "1"
       output_artifacts = ["source"]
 
-      configuration {
-        OAuthToken = "${var.github_oauth_token}"
-        Owner      = "${var.github_repository_owner}"
-        Repo       = "${var.github_repository_name}"
-        Branch     = "${var.github_branch_name}"
+      configuration = {
+        OAuthToken = var.github_oauth_token
+        Owner      = var.github_repository_owner
+        Repo       = var.github_repository_name
+        Branch     = var.github_branch_name
       }
     }
   }
@@ -80,22 +80,22 @@ resource "aws_codepipeline" "codepipeline" {
       input_artifacts = ["source"]
       version         = "1"
 
-      configuration {
-        ProjectName = "${aws_codebuild_project.codebuild_project.name}"
+      configuration = {
+        ProjectName = aws_codebuild_project.codebuild_project.name
       }
     }
   }
 }
 
 resource "aws_codepipeline" "codepipeline_with_approval" {
-  count = "${var.require_approval == "true" ? 1 : 0}"
+  count = var.require_approval == "true" ? 1 : 0
 
-  name     = "${var.name}"
-  role_arn = "${var.codepipeline_role_arn}"
+  name     = var.name
+  role_arn = var.codepipeline_role_arn
 
   artifact_store {
-    location = "${coalesce(var.artifact_store_s3_bucket, join("", aws_s3_bucket.artifacts.*.bucket))}"
-    type     = "S3"
+    location = var.artifact_store_s3_bucket !== "" var.artifact_store_s3_bucket : aws_s3_bucket.artifacts[0].id
+    type = "S3"
   }
 
   stage {
@@ -109,11 +109,11 @@ resource "aws_codepipeline" "codepipeline_with_approval" {
       version          = "1"
       output_artifacts = ["source"]
 
-      configuration {
-        OAuthToken = "${var.github_oauth_token}"
-        Owner      = "${var.github_repository_owner}"
-        Repo       = "${var.github_repository_name}"
-        Branch     = "${var.github_branch_name}"
+      configuration = {
+        OAuthToken = var.github_oauth_token
+        Owner      = var.github_repository_owner
+        Repo       = var.github_repository_name
+        Branch     = var.github_branch_name
       }
     }
   }
@@ -128,9 +128,9 @@ resource "aws_codepipeline" "codepipeline_with_approval" {
       provider = "Manual"
       version  = "1"
 
-      configuration {
-        NotificationArn = "${var.approval_sns_topic_arn}"
-        CustomData      = "${var.approval_comment}"
+      configuration = {
+        NotificationArn = var.approval_sns_topic_arn
+        CustomData      = var.approval_comment
       }
     }
   }
@@ -146,8 +146,8 @@ resource "aws_codepipeline" "codepipeline_with_approval" {
       input_artifacts = ["source"]
       version         = "1"
 
-      configuration {
-        ProjectName = "${aws_codebuild_project.codebuild_project.name}"
+      configuration = {
+        ProjectName = aws_codebuild_project.codebuild_project.name
       }
     }
   }

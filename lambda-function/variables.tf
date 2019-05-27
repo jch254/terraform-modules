@@ -55,9 +55,9 @@ variable "timeout" {
 }
 
 variable "environment_variables" {
-  description = "A map that defines environment variables for the Lambda function. E.g. [{ variables = { NAME = VALUE } }]"
-  type        = "list"
-  default     = []
+  description = "A map that defines environment variables for the Lambda function. E.g. { NAME = \"VALUE\"}"
+  type        = map(string)
+  default     = {}
 }
 
 variable "schedule_expression" {

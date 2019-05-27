@@ -9,7 +9,7 @@
 | artifacts\_dir | Path to folder containing Lambda function's artifacts. Directory contents will be zipped. Cannot be used with artifact_path and artifact_base64sha256 variables. | string | `""` | no |
 | deployment\_s3\_bucket | The S3 bucket where the Lambda function will be deployed. If not provided an S3 bucket will be created. | string | `""` | no |
 | description | Description of what the Lambda Function does | string | `""` | no |
-| environment\_variables | A map that defines environment variables for the Lambda function. E.g. [{ variables = { NAME = VALUE } }] | list | `<list>` | no |
+| environment\_variables | A map that defines environment variables for the Lambda function. E.g. { NAME = "VALUE" } | map(string) | `{}` | no |
 | handler | The function that Lambda calls to begin execution | string | n/a | yes |
 | log\_retention | Specifies the number of days to retain log events | string | `"7"` | no |
 | memory\_size | Amount of memory in MB the Lambda Function can use at runtime | string | `"128"` | no |
@@ -23,4 +23,4 @@
 
 | Name | Description |
 |------|-------------|
-| function\_arn |  |
+| function |  |
