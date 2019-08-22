@@ -4,6 +4,7 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
+| badge\_enabled | Generates a publicly-accessible URL for the projects build badge. Available as badge_url output when true. | bool | `true` | no |
 | build\_compute\_type | CodeBuild compute type (e.g. BUILD_GENERAL1_SMALL) | string | `"BUILD_GENERAL1_SMALL"` | no |
 | build\_docker\_image | Docker image to use as build environment | string | n/a | yes |
 | build\_docker\_tag | Docker image tag to use as build environment | string | n/a | yes |
@@ -15,3 +16,9 @@
 | privileged\_mode | If set to true, enables running the Docker daemon inside a Docker container | string | `"false"` | no |
 | source\_location | HTTPS URL of CodeCommit repo or S3 bucket to use as project source | string | n/a | yes |
 | source\_type | Type of repository that contains the source code to be built. Valid values for this parameter are: CODECOMMIT, CODEPIPELINE, GITHUB or S3. | string | n/a | yes |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| badge\_url |  |

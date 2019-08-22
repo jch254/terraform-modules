@@ -45,3 +45,8 @@ variable "cache_bucket" {
   description = "S3 bucket to use as build cache, the value must be a valid S3 bucket name/prefix"
   default     = ""
 }
+
+variable "badge_enabled" {
+  description = "Generates a publicly-accessible URL for the projects build badge. Available as badge_url output when true."
+  default     = true
+}

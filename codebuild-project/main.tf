@@ -4,9 +4,10 @@ resource "aws_cloudwatch_log_group" "codebuild_lg" {
 }
 
 resource "aws_codebuild_project" "codebuild_project" {
-  name         = var.name
-  description  = "Builds, tests and deploys ${var.name}"
-  service_role = var.codebuild_role_arn
+  name          = var.name
+  description   = "Builds, tests and deploys ${var.name}"
+  service_role  = var.codebuild_role_arn
+  badge_enabled = var.badge_enabled
 
   artifacts {
     type = "NO_ARTIFACTS"
