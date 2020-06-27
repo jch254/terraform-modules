@@ -23,4 +23,4 @@
 
 | Name | Description |
 |------|-------------|
-| function |  |
+| function\_arn |  |

@@ -5,3 +5,4 @@ A good practice is to create a repository containing common infrastructure compo
 ### TODO
 
 - Add more modules
+- Add module descriptions
