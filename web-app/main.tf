@@ -55,10 +55,10 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = var.acm_arn
-    ssl_support_method       = var.acm_arn != null ? "sni-only" : null
-    minimum_protocol_version = var.acm_arn != null ? "TLSv1" : null
-    cloudfront_default_certificate = var.acm_arn == null
+    acm_certificate_arn      = var.acm_arn != null && var.acm_arn != "" ? var.acm_arn : null
+    ssl_support_method       = var.acm_arn != null && var.acm_arn != "" ? "sni-only" : null
+    minimum_protocol_version = var.acm_arn != null && var.acm_arn != "" ? "TLSv1" : null
+    cloudfront_default_certificate = var.acm_arn == null || var.acm_arn == ""
   }
 
   restrictions {
@@ -69,7 +69,7 @@ resource "aws_cloudfront_distribution" "cdn" {
 }
 
 resource "aws_route53_record" "apex_route53_record" {
-  count = var.route53_zone_id != null ? length(var.dns_names) : 0
+  count = var.route53_zone_id != null && var.route53_zone_id != "" ? length(var.dns_names) : 0
 
   zone_id = var.route53_zone_id
   name = var.dns_names[count.index]
