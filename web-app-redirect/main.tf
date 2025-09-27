@@ -60,9 +60,10 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   viewer_certificate {
-    acm_certificate_arn = var.acm_arn
-    ssl_support_method = "sni-only"
-    minimum_protocol_version = "TLSv1"
+    acm_certificate_arn      = var.acm_arn != null && var.acm_arn != "" ? var.acm_arn : null
+    ssl_support_method       = var.acm_arn != null && var.acm_arn != "" ? "sni-only" : null
+    minimum_protocol_version = var.acm_arn != null && var.acm_arn != "" ? "TLSv1" : null
+    cloudfront_default_certificate = var.acm_arn == null || var.acm_arn == ""
   }
 
   restrictions {
@@ -73,6 +74,8 @@ resource "aws_cloudfront_distribution" "cdn" {
 }
 
 resource "aws_route53_record" "redirect_route53_record" {
+  count = var.route53_zone_id != null && var.route53_zone_id != "" ? 1 : 0
+
   zone_id = var.route53_zone_id
   name = var.source_dns_name
   type = "A"
