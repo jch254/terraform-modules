@@ -4,16 +4,22 @@ A good practice is to create a repository containing common infrastructure compo
 
 ## Module Inventory
 
+- `app-log-group` - CloudWatch application log group module for ECS runtime logs.
+- `app-runtime-iam` - ECS task execution and task role module for runtime permissions.
+- `app-security-groups` - API Gateway VPC Link and ECS task security group module.
 - `build-pipeline` - legacy CodePipeline and CodeBuild pipeline module for older GitHub OAuth based deployments.
+- `cloudmap-private-service` - Cloud Map private DNS namespace and service module for ECS service discovery.
 - `codebuild-project` - standalone CodeBuild project module, extended for current ECS deployment pipelines.
 - `dynamodb-single-table` - DynamoDB single-table module for current app data stores.
 - `ecr-repository` - ECR repository module for current container image repositories.
+- `ecs-fargate-service` - ECS Fargate cluster, task definition, and service module.
+- `http-api-cloudmap-proxy` - API Gateway HTTP API, VPC Link, Cloud Map integration, route, and stage module.
 - `lambda-function` - legacy Lambda packaging/deployment helper.
 - `web-app` - legacy S3 and CloudFront static web app module.
 - `web-app-redirect` - legacy S3 and CloudFront redirect module.
 
 ## Current App Stack Direction
 
-The current app stack should be composed from small modules rather than a single app module. Phase 1 adds low-risk building blocks for ECR, DynamoDB, and CodeBuild. ECS Fargate, API Gateway HTTP API, Cloud Map, Cloudflare DNS, build notifications, and SES routing should remain separate future modules.
+The current app stack should be composed from small modules rather than a single app module. Phase 1 adds low-risk building blocks for ECR, DynamoDB, and CodeBuild. Phase 2 adds runtime-edge building blocks for ECS Fargate, API Gateway HTTP API, Cloud Map, runtime IAM, application security groups, and application logs. Cloudflare DNS, build notifications, and SES routing should remain separate future modules.
 
 `web-app` and `web-app-redirect` remain intentionally legacy modules for older static-hosting projects and should not be overloaded with the ECS/API Gateway pattern.
