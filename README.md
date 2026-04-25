@@ -1,6 +1,6 @@
 # Terraform Modules
 
-Reusable Terraform modules for small AWS application infrastructure.
+Reusable Terraform modules for small AWS and Cloudflare application infrastructure.
 
 This repository contains common infrastructure building blocks that can be referenced from application repositories using a Git source, tag, and module subfolder. The goal is to keep repeated infrastructure patterns in one place while letting each application own its own deployment, configuration, secrets, domains, and product-specific choices.
 
@@ -26,6 +26,7 @@ A few of my projects now use the same low-cost AWS app pattern:
 - CodeBuild for CI/CD
 - ECS Fargate for runtime
 - API Gateway HTTP API with VPC Link
+- ACM certificates and API Gateway custom domains
 - Cloud Map for service discovery
 - CloudWatch logs
 - Cloudflare DNS at the app edge
@@ -39,7 +40,7 @@ terraform-modules
   reusable infrastructure primitives
 
 reference-architecture
-  public runnable scaffold composed from those modules
+  public runnable scaffold composed from those modules; first full consumer of the current module set
 
 real apps
   product-specific code, config, secrets, domains, and data model choices
@@ -60,6 +61,10 @@ real apps
 | `cloudmap-private-service` | Cloud Map private DNS namespace and service for ECS service discovery. |
 | `ecs-fargate-service` | ECS Fargate cluster, task definition, and service. |
 | `http-api-cloudmap-proxy` | API Gateway HTTP API, VPC Link, Cloud Map integration, route, and stage. |
+| `acm-dns-validated-certificate` | ACM certificate and validation wait resource for DNS-validated app domains. |
+| `api-gateway-custom-domain` | API Gateway HTTP API custom domain and API mapping. |
+| `cloudflare-acm-validation-records` | Cloudflare DNS records for ACM certificate validation. |
+| `cloudflare-api-dns` | Cloudflare CNAME records pointing app hostnames at API Gateway custom domain targets. |
 
 ### Legacy modules
 
@@ -93,7 +98,21 @@ Phase 2 added runtime-edge building blocks:
 - `ecs-fargate-service`
 - `http-api-cloudmap-proxy`
 
-Cloudflare DNS, build notifications, and SES routing are intentionally separate concerns and should be added as focused modules later if enough projects converge on the same shape.
+Phase 3 added AWS API domain building blocks:
+
+- `acm-dns-validated-certificate`
+- `api-gateway-custom-domain`
+
+Phase 4 added Cloudflare DNS building blocks:
+
+- `cloudflare-acm-validation-records`
+- `cloudflare-api-dns`
+
+`reference-architecture` is now the first full scaffold consumer of the current module set. It composes these modules into a runnable AWS + Cloudflare app scaffold while keeping application-specific configuration in the consuming repository.
+
+AWS modules and Cloudflare modules remain separate provider boundaries. AWS modules own AWS primitives such as ECR, DynamoDB, IAM, CloudWatch, Cloud Map, ECS, API Gateway, and ACM. Cloudflare modules own Cloudflare DNS records only, and consuming apps connect the two through outputs and remote state.
+
+App-specific config, secrets, domains, product logic, SES or mail provider records, Cloudflare security rules, build notifications, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later.
 
 ## Usage
 
@@ -166,6 +185,8 @@ Example release shape:
 - `1.1.0`: current-gen low-risk modules, including ECR and DynamoDB, plus CodeBuild updates.
 - `1.1.1`: CodeBuild log group management made optional for parity-safe migration.
 - `1.2.0`: runtime-edge modules for ECS Fargate, Cloud Map, API Gateway, runtime IAM, security groups, and logs.
+- `1.3.0`: AWS API domain modules for ACM DNS-validated certificates and API Gateway custom domains/mappings.
+- `1.4.0`: Cloudflare DNS modules for ACM validation records and API CNAME records.
 
 ## License
 
