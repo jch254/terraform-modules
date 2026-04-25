@@ -12,6 +12,12 @@ variable "log_retention" {
   default     = 7
 }
 
+variable "create_log_group" {
+  description = "Whether to create and manage the default /aws/codebuild/<name> CloudWatch log group. Set false when the log group is managed outside this module or when preserving parity with an existing unmanaged/default CodeBuild logging setup."
+  type        = bool
+  default     = true
+}
+
 variable "codebuild_role_arn" {
   description = "ARN of IAM role that allows CodeBuild to interact with dependent AWS services"
 }

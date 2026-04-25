@@ -14,6 +14,8 @@ locals {
 }
 
 resource "aws_cloudwatch_log_group" "codebuild_lg" {
+  count = var.create_log_group ? 1 : 0
+
   name              = "/aws/codebuild/${var.name}"
   retention_in_days = var.log_retention
   tags              = var.tags

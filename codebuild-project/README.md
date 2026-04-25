@@ -2,11 +2,13 @@
 
 Creates a standalone CodeBuild project. Defaults preserve the original module behavior. Optional inputs support the current reference architecture pattern: privileged Docker builds, plaintext environment variables for ECR/ECS deployment, shallow GitHub checkout, tags, and a push webhook.
 
+By default, the module creates and manages `/aws/codebuild/<name>` as a CloudWatch log group. Set `create_log_group = false` when migrating an existing CodeBuild project whose log group was previously unmanaged by Terraform, or when the log group is managed externally and plan parity matters.
+
 ## Legacy Example
 
 ```hcl
 module "codebuild" {
-	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.0"
+	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.1"
 
 	name                = var.name
 	codebuild_role_arn  = aws_iam_role.codebuild_role.arn
@@ -22,7 +24,7 @@ module "codebuild" {
 
 ```hcl
 module "codebuild" {
-	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.0"
+	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.1"
 
 	name                         = var.name
 	description                  = "Build project for ${var.name}"
@@ -37,6 +39,7 @@ module "codebuild" {
 	buildspec                    = var.buildspec
 	git_clone_depth              = 1
 	cache_bucket                 = var.cache_bucket
+	create_log_group            = false
 	webhook_enabled              = true
 
 	environment_variables = [
@@ -57,6 +60,8 @@ module "codebuild" {
 }
 ```
 
+Use `create_log_group = true` (the default) for new CodeBuild projects or existing users that already let this module manage `/aws/codebuild/<name>`. Use `create_log_group = false` for parity-safe migrations, including reference-architecture, where the existing root configuration did not manage a CloudWatch log group and CodeBuild/AWS default logging should continue to apply.
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -68,6 +73,7 @@ module "codebuild" {
 | buildspec | The CodeBuild build spec declaration path - see https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html | string | n/a | yes |
 | cache\_bucket | S3 bucket to use as build cache, the value must be a valid S3 bucket name/prefix | string | `""` | no |
 | codebuild\_role\_arn | ARN of IAM role that allows CodeBuild to interact with dependent AWS services | string | n/a | yes |
+| create\_log\_group | Whether to create and manage the default /aws/codebuild/&lt;name&gt; CloudWatch log group. Set false when the log group is managed outside this module or when preserving parity with an existing unmanaged/default CodeBuild logging setup. | bool | `true` | no |
 | description | Description for the CodeBuild project. Defaults to the legacy module description when empty. | string | `""` | no |
 | environment\_variables | Environment variables for the build environment. Each item supports name, value, and optional type. | list(map(string)) | `[]` | no |
 | git\_clone\_depth | Optional git clone depth for source checkout. | number | `null` | no |
