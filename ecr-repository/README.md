@@ -6,7 +6,7 @@ Creates an Amazon ECR repository using the current ECS application pattern: muta
 
 ```hcl
 module "ecr" {
-  source = "git::https://github.com/jch254/terraform-modules.git//ecr-repository?ref=v0.2.0"
+  source = "git::https://github.com/jch254/terraform-modules.git//ecr-repository?ref=1.1.0"
 
   name = var.name
 

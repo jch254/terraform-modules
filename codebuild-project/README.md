@@ -6,7 +6,7 @@ Creates a standalone CodeBuild project. Defaults preserve the original module be
 
 ```hcl
 module "codebuild" {
-	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=v0.2.0"
+	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.0"
 
 	name                = var.name
 	codebuild_role_arn  = aws_iam_role.codebuild_role.arn
@@ -22,7 +22,7 @@ module "codebuild" {
 
 ```hcl
 module "codebuild" {
-	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=v0.2.0"
+	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.0"
 
 	name                         = var.name
 	description                  = "Build project for ${var.name}"

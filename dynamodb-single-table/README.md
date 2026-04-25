@@ -6,7 +6,7 @@ Creates a DynamoDB table for the current single-table application pattern. The d
 
 ```hcl
 module "entities" {
-  source = "git::https://github.com/jch254/terraform-modules.git//dynamodb-single-table?ref=v0.2.0"
+  source = "git::https://github.com/jch254/terraform-modules.git//dynamodb-single-table?ref=1.1.0"
 
   name = "${var.name}-entities"
 
@@ -20,7 +20,7 @@ module "entities" {
 
 ```hcl
 module "entities" {
-  source = "git::https://github.com/jch254/terraform-modules.git//dynamodb-single-table?ref=v0.2.0"
+  source = "git::https://github.com/jch254/terraform-modules.git//dynamodb-single-table?ref=1.1.0"
 
   name = "${var.name}-entities"
 
