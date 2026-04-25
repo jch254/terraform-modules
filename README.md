@@ -68,6 +68,8 @@ real apps
 | `ses-domain-identity` | SES domain identity and Easy DKIM tokens for one domain. |
 | `cloudflare-ses-domain-records` | Cloudflare TXT and CNAME records for SES identity verification and DKIM. |
 | `cloudflare-ses-inbound-mx` | Cloudflare MX record for routing one inbound domain to SES receiving. |
+| `ses-receipt-rule-set` | SES receipt rule set with opt-in active rule set ownership. |
+| `ses-receipt-rule` | SES receipt rule with S3 raw-mail action and app-specific Lambda action. |
 
 ### Legacy modules
 
@@ -117,11 +119,16 @@ Phase 5 added the first low-risk SES inbound primitives:
 - `cloudflare-ses-domain-records`
 - `cloudflare-ses-inbound-mx`
 
+Phase 6 added SES receipt routing primitives:
+
+- `ses-receipt-rule-set`
+- `ses-receipt-rule`
+
 `reference-architecture` is now the first full scaffold consumer of the current module set. It composes these modules into a runnable AWS + Cloudflare app scaffold while keeping application-specific configuration in the consuming repository.
 
 AWS modules and Cloudflare modules remain separate provider boundaries. AWS modules own AWS primitives such as ECR, DynamoDB, IAM, CloudWatch, Cloud Map, ECS, API Gateway, and ACM. Cloudflare modules own Cloudflare DNS records only, and consuming apps connect the two through outputs and remote state.
 
-App-specific config, secrets, domains, product logic, SES receipt rules, SES active receipt rule sets, raw mail storage, forwarder Lambdas, mail provider records, Cloudflare security rules, build notifications, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later.
+App-specific config, secrets, domains, product logic, SES activation decisions, raw mail storage, forwarder Lambdas, Lambda permissions, mail provider records, Cloudflare security rules, build notifications, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later.
 
 ## Usage
 
