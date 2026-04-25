@@ -65,6 +65,9 @@ real apps
 | `api-gateway-custom-domain` | API Gateway HTTP API custom domain and API mapping. |
 | `cloudflare-acm-validation-records` | Cloudflare DNS records for ACM certificate validation. |
 | `cloudflare-api-dns` | Cloudflare CNAME records pointing app hostnames at API Gateway custom domain targets. |
+| `ses-domain-identity` | SES domain identity and Easy DKIM tokens for one domain. |
+| `cloudflare-ses-domain-records` | Cloudflare TXT and CNAME records for SES identity verification and DKIM. |
+| `cloudflare-ses-inbound-mx` | Cloudflare MX record for routing one inbound domain to SES receiving. |
 
 ### Legacy modules
 
@@ -108,11 +111,17 @@ Phase 4 added Cloudflare DNS building blocks:
 - `cloudflare-acm-validation-records`
 - `cloudflare-api-dns`
 
+Phase 5 added the first low-risk SES inbound primitives:
+
+- `ses-domain-identity`
+- `cloudflare-ses-domain-records`
+- `cloudflare-ses-inbound-mx`
+
 `reference-architecture` is now the first full scaffold consumer of the current module set. It composes these modules into a runnable AWS + Cloudflare app scaffold while keeping application-specific configuration in the consuming repository.
 
 AWS modules and Cloudflare modules remain separate provider boundaries. AWS modules own AWS primitives such as ECR, DynamoDB, IAM, CloudWatch, Cloud Map, ECS, API Gateway, and ACM. Cloudflare modules own Cloudflare DNS records only, and consuming apps connect the two through outputs and remote state.
 
-App-specific config, secrets, domains, product logic, SES or mail provider records, Cloudflare security rules, build notifications, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later.
+App-specific config, secrets, domains, product logic, SES receipt rules, SES active receipt rule sets, raw mail storage, forwarder Lambdas, mail provider records, Cloudflare security rules, build notifications, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later.
 
 ## Usage
 
