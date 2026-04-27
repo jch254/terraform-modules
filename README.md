@@ -162,7 +162,7 @@ source = "github.com/jch254/terraform-modules//ecs-fargate-service?ref=1.7.0"
 
 ## Tags and versioning
 
-This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.8.1`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
+This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.8.2`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
 
 Versioning follows a pragmatic SemVer:
 
@@ -225,6 +225,7 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.7.0`: consolidated `cloudflare-dns-records` module replaces `cloudflare-acm-validation-records`, `cloudflare-api-dns`, `cloudflare-ses-domain-records`, and `cloudflare-ses-inbound-mx`. Migration is `moved`-block only — see the [cloudflare-dns-records README](cloudflare-dns-records/README.md) for the per-module `moved` targets and `terraform state mv` commands. Consumers must run the moves before `terraform apply` so the plan shows no record churn.
 - `1.8.0`: `build-notifier` module for reusable CodeBuild success/failure email notifications.
 - `1.8.1`: `build-notifier` can be deployed as shared core-only infrastructure, and `build-notifier-project-subscription` lets app repos own their EventBridge opt-in rules.
+- `1.8.2`: `codebuild-project` declares its AWS provider requirement explicitly so provider alias passing validates without warnings.
 
 ## License
 
