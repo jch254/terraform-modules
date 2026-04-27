@@ -18,16 +18,34 @@ module "parse_domain_identity" {
 }
 ```
 
-Use the outputs with a DNS-specific module or root:
+Use the outputs to publish the SES verification TXT and DKIM CNAME records via the generic `cloudflare-dns-records` module:
 
 ```hcl
-module "parse_domain_records" {
-  source = "git::https://github.com/jch254/terraform-modules.git//cloudflare-ses-domain-records?ref=<version>"
+locals {
+  parse_domain_records = merge(
+    {
+      verification = {
+        name    = "_amazonses.${module.parse_domain_identity.domain}"
+        type    = "TXT"
+        content = module.parse_domain_identity.verification_token
+      }
+    },
+    {
+      for token in module.parse_domain_identity.dkim_tokens :
+      "dkim_${token}" => {
+        name    = "${token}._domainkey.${module.parse_domain_identity.domain}"
+        type    = "CNAME"
+        content = "${token}.dkim.amazonses.com"
+      }
+    },
+  )
+}
 
-  zone_id            = data.cloudflare_zone.zone.id
-  domain             = module.parse_domain_identity.domain
-  verification_token = module.parse_domain_identity.verification_token
-  dkim_tokens        = module.parse_domain_identity.dkim_tokens
+module "parse_domain_records" {
+  source = "git::https://github.com/jch254/terraform-modules.git//cloudflare-dns-records?ref=<version>"
+
+  zone_id = data.cloudflare_zone.zone.id
+  records = local.parse_domain_records
 }
 ```
 

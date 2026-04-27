@@ -63,11 +63,8 @@ real apps
 | `http-api-cloudmap-proxy` | API Gateway HTTP API, VPC Link, Cloud Map integration, route, and stage. |
 | `acm-dns-validated-certificate` | ACM certificate and validation wait resource for DNS-validated app domains. |
 | `api-gateway-custom-domain` | API Gateway HTTP API custom domain and API mapping. |
-| `cloudflare-acm-validation-records` | Cloudflare DNS records for ACM certificate validation. |
-| `cloudflare-api-dns` | Cloudflare CNAME records pointing app hostnames at API Gateway custom domain targets. |
+| `cloudflare-dns-records` | Generic Cloudflare DNS records module driven by a typed `records` map. Replaces the per-purpose ACM-validation, API-CNAME, SES-verification, and SES-inbound-MX modules. |
 | `ses-domain-identity` | SES domain identity and Easy DKIM tokens for one domain. |
-| `cloudflare-ses-domain-records` | Cloudflare TXT and CNAME records for SES identity verification and DKIM. |
-| `cloudflare-ses-inbound-mx` | Cloudflare MX record for routing one inbound domain to SES receiving. |
 | `ses-receipt-rule-set` | SES receipt rule set with opt-in active rule set ownership. |
 | `ses-receipt-rule` | SES receipt rule with S3 raw-mail action and app-specific Lambda action. |
 
@@ -110,19 +107,27 @@ Phase 3 added AWS API domain building blocks:
 
 Phase 4 added Cloudflare DNS building blocks:
 
-- `cloudflare-acm-validation-records`
-- `cloudflare-api-dns`
+- `cloudflare-acm-validation-records` (consolidated into `cloudflare-dns-records` in Phase 7)
+- `cloudflare-api-dns` (consolidated into `cloudflare-dns-records` in Phase 7)
 
 Phase 5 added the first low-risk SES inbound primitives:
 
 - `ses-domain-identity`
-- `cloudflare-ses-domain-records`
-- `cloudflare-ses-inbound-mx`
+- `cloudflare-ses-domain-records` (consolidated into `cloudflare-dns-records` in Phase 7)
+- `cloudflare-ses-inbound-mx` (consolidated into `cloudflare-dns-records` in Phase 7)
 
 Phase 6 added SES receipt routing primitives:
 
 - `ses-receipt-rule-set`
 - `ses-receipt-rule`
+
+Phase 7 collapsed the four single-resource Cloudflare DNS wrappers into one generic, records-as-data module (released as `1.7.0`):
+
+- `cloudflare-dns-records`
+
+The previous per-purpose Cloudflare DNS modules added a renamed variable shape over a single `cloudflare_dns_record` resource without combining anything, and they fragmented the module namespace. The consolidated module accepts a `records` map keyed by caller-chosen keys and lets consumers compose any SES-specific or purpose-specific names and contents at the call site.
+
+Consumers of the four removed modules must update their `source` to `cloudflare-dns-records` and run the `moved` blocks documented in the [cloudflare-dns-records README](cloudflare-dns-records/README.md) before applying. Apply must show no create, update, delete, or replace for moved records.
 
 `reference-architecture` is now the first full scaffold consumer of the current module set. It composes these modules into a runnable AWS + Cloudflare app scaffold while keeping application-specific configuration in the consuming repository.
 
@@ -132,11 +137,11 @@ App-specific config, secrets, domains, product logic, SES activation decisions, 
 
 ## Usage
 
-Reference a module by repository URL, subfolder, and tag:
+Reference a module by repository URL, subfolder, and tag. The `?ref=<tag>` query pins the module to a specific Git tag from this repo so consumer plans are reproducible.
 
 ```hcl
 module "dynamodb_single_table" {
-  source = "github.com/jch254/terraform-modules//dynamodb-single-table?ref=1.1.0"
+  source = "github.com/jch254/terraform-modules//dynamodb-single-table?ref=1.7.0"
 
   name          = "reference-architecture-entities"
   hash_key      = "PK"
@@ -147,11 +152,23 @@ module "dynamodb_single_table" {
 }
 ```
 
-For modules used in deployed apps, pin to a tag rather than a branch:
+For modules used in deployed apps, always pin to a tag rather than a branch — branches move and a future apply can pick up unrelated changes:
 
 ```hcl
-source = "github.com/jch254/terraform-modules//ecs-fargate-service?ref=1.2.0"
+source = "github.com/jch254/terraform-modules//ecs-fargate-service?ref=1.7.0"
 ```
+
+## Tags and versioning
+
+This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.7.0`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
+
+Versioning follows a pragmatic SemVer:
+
+- **Patch** (`1.6.x` → `1.6.y`) — bug fixes, doc-only changes, and additive optional inputs that default to prior behaviour. Safe to bump consumer `?ref` without code changes.
+- **Minor** (`1.x.0` → `1.y.0`) — new modules, new outputs, new optional inputs, or new resources where consumers can adopt with `moved` blocks and no resource churn (`Plan: 0 to add, 0 to change, 0 to destroy`). Module removals or renames also land here as long as the migration path is `moved`-only — see Phase 7 / `1.7.0` for an example.
+- **Major** (`1.y.0` → `2.0.0`) — reserved for changes that consumers cannot migrate to without resource recreation, provider replacement, or unavoidable plan churn on long-lived infrastructure.
+
+When a release reshapes a module path (rename, removal, or consolidation), the affected module's README documents the `moved` blocks or `terraform state mv` commands callers run alongside the `?ref` bump. Consumers must run those before `terraform apply`. See [Migration approach](#migration-approach) below.
 
 ## Migration approach
 
@@ -194,15 +211,16 @@ Some legacy modules may require older Terraform/provider assumptions. Prefer tar
 
 ## Release notes
 
-Use tags for app consumption.
-
-Example release shape:
+Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for what each level of bump means.
 
 - `1.1.0`: current-gen low-risk modules, including ECR and DynamoDB, plus CodeBuild updates.
 - `1.1.1`: CodeBuild log group management made optional for parity-safe migration.
 - `1.2.0`: runtime-edge modules for ECS Fargate, Cloud Map, API Gateway, runtime IAM, security groups, and logs.
 - `1.3.0`: AWS API domain modules for ACM DNS-validated certificates and API Gateway custom domains/mappings.
 - `1.4.0`: Cloudflare DNS modules for ACM validation records and API CNAME records.
+- `1.5.0`: SES inbound primitives — `ses-domain-identity`, `cloudflare-ses-domain-records`, `cloudflare-ses-inbound-mx`.
+- `1.6.0`: SES receipt routing primitives — `ses-receipt-rule-set`, `ses-receipt-rule`.
+- `1.7.0`: consolidated `cloudflare-dns-records` module replaces `cloudflare-acm-validation-records`, `cloudflare-api-dns`, `cloudflare-ses-domain-records`, and `cloudflare-ses-inbound-mx`. Migration is `moved`-block only — see the [cloudflare-dns-records README](cloudflare-dns-records/README.md) for the per-module `moved` targets and `terraform state mv` commands. Consumers must run the moves before `terraform apply` so the plan shows no record churn.
 
 ## License
 
