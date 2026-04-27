@@ -67,6 +67,8 @@ real apps
 | `ses-domain-identity` | SES domain identity and Easy DKIM tokens for one domain. |
 | `ses-receipt-rule-set` | SES receipt rule set with opt-in active rule set ownership. |
 | `ses-receipt-rule` | SES receipt rule with S3 raw-mail action and app-specific Lambda action. |
+| `build-notifier` | Shared CodeBuild notification SNS topic, email subscription, and formatter Lambda. |
+| `build-notifier-project-subscription` | App-owned EventBridge rule and Lambda permission that opts CodeBuild projects into the shared notifier. |
 
 ### Legacy modules
 
@@ -133,7 +135,7 @@ Consumers of the four removed modules must update their `source` to `cloudflare-
 
 AWS modules and Cloudflare modules remain separate provider boundaries. AWS modules own AWS primitives such as ECR, DynamoDB, IAM, CloudWatch, Cloud Map, ECS, API Gateway, and ACM. Cloudflare modules own Cloudflare DNS records only, and consuming apps connect the two through outputs and remote state.
 
-App-specific config, secrets, domains, product logic, SES activation decisions, raw mail storage, forwarder Lambdas, Lambda permissions, mail provider records, Cloudflare security rules, build notifications, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later.
+App-specific config, secrets, domains, product logic, SES activation decisions, raw mail storage, forwarder Lambdas, mail provider records, Cloudflare security rules, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later. Shared build notification infrastructure can be split between `build-notifier` in a shared platform repo and `build-notifier-project-subscription` in each app repo.
 
 ## Usage
 
@@ -160,7 +162,7 @@ source = "github.com/jch254/terraform-modules//ecs-fargate-service?ref=1.7.0"
 
 ## Tags and versioning
 
-This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.7.0`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
+This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.8.1`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
 
 Versioning follows a pragmatic SemVer:
 
@@ -221,6 +223,8 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.5.0`: SES inbound primitives — `ses-domain-identity`, `cloudflare-ses-domain-records`, `cloudflare-ses-inbound-mx`.
 - `1.6.0`: SES receipt routing primitives — `ses-receipt-rule-set`, `ses-receipt-rule`.
 - `1.7.0`: consolidated `cloudflare-dns-records` module replaces `cloudflare-acm-validation-records`, `cloudflare-api-dns`, `cloudflare-ses-domain-records`, and `cloudflare-ses-inbound-mx`. Migration is `moved`-block only — see the [cloudflare-dns-records README](cloudflare-dns-records/README.md) for the per-module `moved` targets and `terraform state mv` commands. Consumers must run the moves before `terraform apply` so the plan shows no record churn.
+- `1.8.0`: `build-notifier` module for reusable CodeBuild success/failure email notifications.
+- `1.8.1`: `build-notifier` can be deployed as shared core-only infrastructure, and `build-notifier-project-subscription` lets app repos own their EventBridge opt-in rules.
 
 ## License
 

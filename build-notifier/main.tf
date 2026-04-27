@@ -87,6 +87,8 @@ resource "aws_lambda_function" "formatter" {
 }
 
 resource "aws_cloudwatch_event_rule" "this" {
+  count = length(var.codebuild_project_names) > 0 ? 1 : 0
+
   name        = "${var.name}-build-notifications"
   description = "CodeBuild build success and failure events"
 
@@ -106,15 +108,19 @@ resource "aws_cloudwatch_event_rule" "this" {
 }
 
 resource "aws_lambda_permission" "eventbridge" {
+  count = length(var.codebuild_project_names) > 0 ? 1 : 0
+
   statement_id  = "AllowExecutionFromEventBridge"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.formatter.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.this.arn
+  source_arn    = aws_cloudwatch_event_rule.this[0].arn
 }
 
 resource "aws_cloudwatch_event_target" "lambda" {
-  rule      = aws_cloudwatch_event_rule.this.name
+  count = length(var.codebuild_project_names) > 0 ? 1 : 0
+
+  rule      = aws_cloudwatch_event_rule.this[0].name
   target_id = "${var.name}-build-notifications-lambda"
   arn       = aws_lambda_function.formatter.arn
 }

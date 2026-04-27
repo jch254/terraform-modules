@@ -1,3 +1,5 @@
+/// <reference path="./types.d.ts" />
+
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
 const sns = new SNSClient({});
@@ -37,6 +39,12 @@ interface CodeBuildEvent {
   time: string;
   region: string;
   account: string;
+}
+
+interface BuildNotifierEvent {
+  event?: CodeBuildEvent;
+  appUrl?: string;
+  githubRepoUrl?: string;
 }
 
 function statusIcon(status: string): string {
@@ -79,7 +87,11 @@ function getFailedPhaseDetails(phases: CodeBuildPhase[]): string {
   return details ? `\nError Details:\n${details}` : "";
 }
 
-export async function handler(event: CodeBuildEvent): Promise<void> {
+export async function handler(rawEvent: CodeBuildEvent | BuildNotifierEvent): Promise<void> {
+  const wrapper = rawEvent as BuildNotifierEvent;
+  const event = wrapper.event?.detail ? wrapper.event : rawEvent as CodeBuildEvent;
+  const appUrl = wrapper.appUrl ?? APP_URL;
+  const githubRepoUrl = wrapper.githubRepoUrl ?? GITHUB_REPO_URL;
   const detail = event.detail;
   const info = detail["additional-information"];
   const status = detail["build-status"];
@@ -95,7 +107,7 @@ export async function handler(event: CodeBuildEvent): Promise<void> {
   const icon = statusIcon(status);
   const duration = formatDuration(phases);
   const projectLink = `https://${event.region}.console.aws.amazon.com/codesuite/codebuild/${event.account}/projects/${project}/history`;
-  const commitLink = GITHUB_REPO_URL ? `${GITHUB_REPO_URL}/commit/${fullCommit}` : "";
+  const commitLink = githubRepoUrl ? `${githubRepoUrl}/commit/${fullCommit}` : "";
   const commitDisplay = commitMsg ? `${commit} — ${commitMsg}` : commit;
   const subject = `${icon} ${project} build #${buildNum} ${status}`;
   const message = [
@@ -112,7 +124,7 @@ export async function handler(event: CodeBuildEvent): Promise<void> {
     formatPhaseTable(phases),
     getFailedPhaseDetails(phases),
     ``,
-    `URL:      ${APP_URL}`,
+    `URL:      ${appUrl}`,
     `Project:  ${projectLink}`,
     ...(commitLink ? [`GitHub:   ${commitLink}`] : []),
     `Logs:     ${logsLink}`,

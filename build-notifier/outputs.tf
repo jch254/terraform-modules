@@ -14,6 +14,6 @@ output "lambda_function_arn" {
 }
 
 output "event_rule_arn" {
-  description = "ARN of the EventBridge rule listening on CodeBuild state changes."
-  value       = aws_cloudwatch_event_rule.this.arn
+  description = "ARN of the EventBridge rule listening on CodeBuild state changes, when codebuild_project_names is non-empty."
+  value       = try(aws_cloudwatch_event_rule.this[0].arn, null)
 }

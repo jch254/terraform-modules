@@ -1,12 +1,15 @@
 # build-notifier
 
-Wires CodeBuild project state changes (`SUCCEEDED` / `FAILED` only) to an email notification with a formatted body. Internally:
+Deploys the shared build notification core: an SNS topic, email subscription, and Lambda formatter that publishes formatted CodeBuild build notifications.
+
+Apps can opt in by using `build-notifier-project-subscription`, which creates an app-owned EventBridge rule and Lambda permission targeting this shared formatter. For backwards-compatible single-root deployments, this module can still create an EventBridge rule when `codebuild_project_names` is non-empty.
+
+Internally:
 
 - SNS topic + email subscription
 - Lambda formatter (Node.js, vendored at `lambda/dist/index.js`) that turns the EventBridge event into a readable subject + multi-line body and publishes to SNS
 - IAM role + inline policy for the Lambda (`sns:Publish` on the topic, CloudWatch Logs)
-- EventBridge rule scoped to `aws.codebuild` `Build State Change` events filtered by `project-name`
-- Lambda invoke permission + EventBridge target
+- optional EventBridge rule, Lambda invoke permission, and EventBridge target when `codebuild_project_names` is set
 
 The formatter pulls the commit SHA and message from CodeBuild [exported environment variables](https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html#build-spec-ref-syntax) (`COMMIT_SHA`, `COMMIT_MESSAGE`) when present, falling back to `CODEBUILD_SOURCE_VERSION`. Export them in your buildspec to get a meaningful subject line:
 
@@ -30,8 +33,20 @@ module "build_notifier" {
   name               = var.name
   environment        = var.environment
   notification_email = var.notification_email
-  app_url            = "https://${var.dns_name}"
-  github_repo_url    = trimsuffix(var.source_location, ".git")
+}
+```
+
+Then subscribe an app-owned CodeBuild project from the app repo:
+
+```hcl
+module "build_notifier_subscription" {
+  source = "git::https://github.com/jch254/terraform-modules.git//build-notifier-project-subscription?ref=<version>"
+
+  name                = var.name
+  environment         = var.environment
+  lambda_function_arn = module.build_notifier.lambda_function_arn
+  app_url             = "https://${var.dns_name}"
+  github_repo_url     = trimsuffix(var.source_location, ".git")
 
   codebuild_project_names = [module.codebuild_project.project_name]
 }
@@ -44,9 +59,9 @@ module "build_notifier" {
 | `name` | Resource name prefix. | `string` | required |
 | `environment` | Environment tag value. | `string` | required |
 | `notification_email` | Email subscribed to the SNS topic. | `string` | required |
-| `codebuild_project_names` | CodeBuild project names whose state changes trigger notifications. | `list(string)` | required |
-| `app_url` | Public application URL surfaced in the notification body. | `string` | `""` |
-| `github_repo_url` | Repository URL used for commit links. | `string` | `""` |
+| `codebuild_project_names` | Optional CodeBuild project names whose state changes trigger notifications from this module. Leave empty when app repos subscribe with `build-notifier-project-subscription`. | `list(string)` | `[]` |
+| `app_url` | Public application URL surfaced in the notification body for optional inline subscriptions. | `string` | `""` |
+| `github_repo_url` | Repository URL used for commit links for optional inline subscriptions. | `string` | `""` |
 | `lambda_runtime` | Lambda runtime for the formatter. | `string` | `"nodejs20.x"` |
 
 ## Outputs
@@ -56,7 +71,7 @@ module "build_notifier" {
 | `sns_topic_arn` | ARN of the SNS topic. |
 | `lambda_function_name` | Formatter Lambda function name. |
 | `lambda_function_arn` | Formatter Lambda function ARN. |
-| `event_rule_arn` | EventBridge rule ARN. |
+| `event_rule_arn` | EventBridge rule ARN when `codebuild_project_names` is non-empty. |
 
 ## Modifying the formatter
 
@@ -103,17 +118,17 @@ moved {
 
 moved {
   from = aws_lambda_permission.build_notification_eventbridge
-  to   = module.build_notifier.aws_lambda_permission.eventbridge
+  to   = module.build_notifier.aws_lambda_permission.eventbridge[0]
 }
 
 moved {
   from = aws_cloudwatch_event_rule.build_notifications
-  to   = module.build_notifier.aws_cloudwatch_event_rule.this
+  to   = module.build_notifier.aws_cloudwatch_event_rule.this[0]
 }
 
 moved {
   from = aws_cloudwatch_event_target.build_notifications
-  to   = module.build_notifier.aws_cloudwatch_event_target.lambda
+  to   = module.build_notifier.aws_cloudwatch_event_target.lambda[0]
 }
 ```
 

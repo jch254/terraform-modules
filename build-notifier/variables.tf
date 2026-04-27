@@ -14,8 +14,9 @@ variable "notification_email" {
 }
 
 variable "codebuild_project_names" {
-  description = "CodeBuild project names whose SUCCEEDED/FAILED state changes trigger notifications."
+  description = "Optional CodeBuild project names whose SUCCEEDED/FAILED state changes trigger notifications from this module. Leave empty when project subscriptions are owned by app repos via build-notifier-project-subscription."
   type        = list(string)
+  default     = []
 }
 
 variable "app_url" {
