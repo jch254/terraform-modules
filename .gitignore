@@ -6,3 +6,4 @@ test.tf*
 dist/
 *.tfstate*
 *.tfplan*
+.terraform.lock.hcl
