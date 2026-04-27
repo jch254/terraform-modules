@@ -4,6 +4,7 @@
 .vscode/
 test.tf*
 dist/
+!build-notifier/lambda/dist/
 *.tfstate*
 *.tfplan*
 .terraform.lock.hcl
