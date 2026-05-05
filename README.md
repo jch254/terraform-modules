@@ -226,6 +226,8 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.8.0`: `build-notifier` module for reusable CodeBuild success/failure email notifications.
 - `1.8.1`: `build-notifier` can be deployed as shared core-only infrastructure, and `build-notifier-project-subscription` lets app repos own their EventBridge opt-in rules.
 - `1.8.2`: `codebuild-project` declares its AWS provider requirement explicitly so provider alias passing validates without warnings.
+- `1.8.3`: `build-notifier` formatter Lambda runs on Node.js 22.x.
+- `1.8.4`: rebuilds the `build-notifier` formatter artifact so shared app subscriptions can pass wrapped event metadata.
 
 ## License
 

@@ -1,4 +1,3 @@
-"use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -17,7 +16,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// infrastructure/terraform/lambda/build-notification-formatter/index.ts
+// lambda/index.ts
 var index_exports = {};
 __export(index_exports, {
   handler: () => handler
@@ -63,7 +62,11 @@ function getFailedPhaseDetails(phases) {
 Error Details:
 ${details}` : "";
 }
-async function handler(event) {
+async function handler(rawEvent) {
+  const wrapper = rawEvent;
+  const event = wrapper.event?.detail ? wrapper.event : rawEvent;
+  const appUrl = wrapper.appUrl ?? APP_URL;
+  const githubRepoUrl = wrapper.githubRepoUrl ?? GITHUB_REPO_URL;
   const detail = event.detail;
   const info = detail["additional-information"];
   const status = detail["build-status"];
@@ -79,7 +82,7 @@ async function handler(event) {
   const icon = statusIcon(status);
   const duration = formatDuration(phases);
   const projectLink = `https://${event.region}.console.aws.amazon.com/codesuite/codebuild/${event.account}/projects/${project}/history`;
-  const commitLink = GITHUB_REPO_URL ? `${GITHUB_REPO_URL}/commit/${fullCommit}` : "";
+  const commitLink = githubRepoUrl ? `${githubRepoUrl}/commit/${fullCommit}` : "";
   const commitDisplay = commitMsg ? `${commit} \u2014 ${commitMsg}` : commit;
   const subject = `${icon} ${project} build #${buildNum} ${status}`;
   const message = [
@@ -96,7 +99,7 @@ async function handler(event) {
     formatPhaseTable(phases),
     getFailedPhaseDetails(phases),
     ``,
-    `URL:      ${APP_URL}`,
+    `URL:      ${appUrl}`,
     `Project:  ${projectLink}`,
     ...commitLink ? [`GitHub:   ${commitLink}`] : [],
     `Logs:     ${logsLink}`
