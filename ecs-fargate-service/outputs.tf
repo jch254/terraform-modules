@@ -37,3 +37,13 @@ output "task_definition_family" {
   description = "Family of the ECS task definition."
   value       = aws_ecs_task_definition.main.family
 }
+
+output "log_group_name" {
+  description = "Name of the CloudWatch log group used by the ECS task."
+  value       = local.log_group_name
+}
+
+output "log_group_arn" {
+  description = "ARN of the managed CloudWatch log group when create_log_group is true."
+  value       = var.create_log_group ? aws_cloudwatch_log_group.main[0].arn : null
+}

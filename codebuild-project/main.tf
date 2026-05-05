@@ -1,4 +1,6 @@
 locals {
+  environment = coalesce(var.environment, lookup(var.tags, "Environment", "prod"))
+
   default_webhook_filter_groups = [[
     {
       type    = "EVENT"
@@ -85,4 +87,17 @@ resource "aws_codebuild_webhook" "codebuild_webhook" {
       }
     }
   }
+}
+
+module "build_notifier_subscription" {
+  count  = var.build_notifier_lambda_function_arn != "" ? 1 : 0
+  source = "../build-notifier-project-subscription"
+
+  name                = var.name
+  environment         = local.environment
+  lambda_function_arn = var.build_notifier_lambda_function_arn
+  app_url             = var.build_notifier_app_url
+  github_repo_url     = var.build_notifier_github_repo_url
+
+  codebuild_project_names = [aws_codebuild_project.codebuild_project.name]
 }

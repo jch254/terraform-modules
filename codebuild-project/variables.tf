@@ -84,6 +84,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "environment" {
+  description = "Environment tag value used by optional child resources. Defaults to tags.Environment or prod."
+  type        = string
+  default     = null
+}
+
 variable "webhook_enabled" {
   description = "Whether to create a CodeBuild webhook for the project."
   default     = false
@@ -98,4 +104,22 @@ variable "webhook_filter_groups" {
   description = "Webhook filter groups. Defaults to push events on refs/heads/main when webhook_enabled is true and no filters are provided."
   type        = list(list(map(string)))
   default     = []
+}
+
+variable "build_notifier_lambda_function_arn" {
+  description = "ARN of the shared build notification formatter Lambda. Leave empty to skip creating an EventBridge subscription."
+  type        = string
+  default     = ""
+}
+
+variable "build_notifier_app_url" {
+  description = "Public application URL included in shared build notification messages."
+  type        = string
+  default     = ""
+}
+
+variable "build_notifier_github_repo_url" {
+  description = "GitHub repository URL used to render commit links in shared build notification messages."
+  type        = string
+  default     = ""
 }

@@ -54,12 +54,13 @@ real apps
 | --- | --- |
 | `ecr-repository` | ECR repository for container images, with optional lifecycle policy and image scanning settings. |
 | `dynamodb-single-table` | DynamoDB single-table module with optional range key, TTL, and configurable GSIs. |
-| `codebuild-project` | Standalone CodeBuild project module, extended for current ECS deployment pipelines. |
-| `app-log-group` | CloudWatch application log group for ECS runtime logs. |
+| `codebuild-project` | Standalone CodeBuild project module, with optional app-owned subscription to the shared build notifier. |
+| `app-log-group` | CloudWatch application log group for ECS runtime logs. Kept for compatibility; new ECS Fargate consumers can let `ecs-fargate-service` create the log group directly. |
 | `app-runtime-iam` | ECS task execution role, task role, and runtime IAM policies. |
 | `app-security-groups` | API Gateway VPC Link and ECS task security groups. |
 | `cloudmap-private-service` | Cloud Map private DNS namespace and service for ECS service discovery. |
-| `ecs-fargate-service` | ECS Fargate cluster, task definition, and service. |
+| `ecs-fargate-service` | ECS Fargate cluster, task definition, service, and optional application log group. |
+| `ecs-http-service` | Composite ECS HTTP runtime: security groups, Cloud Map, HTTP API proxy, ECS Fargate service, and optional application log group. |
 | `http-api-cloudmap-proxy` | API Gateway HTTP API, VPC Link, Cloud Map integration, route, and stage. |
 | `acm-dns-validated-certificate` | ACM certificate and validation wait resource for DNS-validated app domains. |
 | `api-gateway-custom-domain` | API Gateway HTTP API custom domain and API mapping. |
@@ -135,7 +136,7 @@ Consumers of the four removed modules must update their `source` to `cloudflare-
 
 AWS modules and Cloudflare modules remain separate provider boundaries. AWS modules own AWS primitives such as ECR, DynamoDB, IAM, CloudWatch, Cloud Map, ECS, API Gateway, and ACM. Cloudflare modules own Cloudflare DNS records only, and consuming apps connect the two through outputs and remote state.
 
-App-specific config, secrets, domains, product logic, SES activation decisions, raw mail storage, forwarder Lambdas, mail provider records, Cloudflare security rules, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later. Shared build notification infrastructure can be split between `build-notifier` in a shared platform repo and `build-notifier-project-subscription` in each app repo.
+App-specific config, secrets, domains, product logic, SES activation decisions, raw mail storage, forwarder Lambdas, mail provider records, Cloudflare security rules, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later. Shared build notification infrastructure can be split between `build-notifier` in a shared platform repo and app-owned EventBridge subscriptions. For projects that already use `codebuild-project`, prefer that module's `build_notifier_lambda_function_arn` input over calling `build-notifier-project-subscription` separately.
 
 ## Usage
 
@@ -162,7 +163,7 @@ source = "github.com/jch254/terraform-modules//ecs-fargate-service?ref=1.7.0"
 
 ## Tags and versioning
 
-This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.8.2`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
+This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.9.0`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
 
 Versioning follows a pragmatic SemVer:
 
@@ -228,6 +229,7 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.8.2`: `codebuild-project` declares its AWS provider requirement explicitly so provider alias passing validates without warnings.
 - `1.8.3`: `build-notifier` formatter Lambda runs on Node.js 22.x.
 - `1.8.4`: rebuilds the `build-notifier` formatter artifact so shared app subscriptions can pass wrapped event metadata.
+- `1.9.0`: adds `ecs-http-service` as the standard ECS HTTP runtime composite, lets `ecs-fargate-service` own the app log group, and lets `codebuild-project` create the app-owned shared build notifier subscription.
 
 ## License
 

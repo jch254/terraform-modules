@@ -13,3 +13,13 @@ output "project_arn" {
 output "project_id" {
   value = aws_codebuild_project.codebuild_project.id
 }
+
+output "build_notification_event_rule_arn" {
+  description = "ARN of the optional app-owned EventBridge rule targeting the shared build notifier."
+  value       = var.build_notifier_lambda_function_arn == "" ? "" : module.build_notifier_subscription[0].event_rule_arn
+}
+
+output "build_notification_event_rule_name" {
+  description = "Name of the optional app-owned EventBridge rule targeting the shared build notifier."
+  value       = var.build_notifier_lambda_function_arn == "" ? "" : module.build_notifier_subscription[0].event_rule_name
+}

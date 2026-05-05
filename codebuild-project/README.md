@@ -1,6 +1,6 @@
 # CodeBuild Project
 
-Creates a standalone CodeBuild project. Defaults preserve the original module behavior. Optional inputs support the current reference architecture pattern: privileged Docker builds, plaintext environment variables for ECR/ECS deployment, shallow GitHub checkout, tags, and a push webhook.
+Creates a standalone CodeBuild project. Defaults preserve the original module behavior. Optional inputs support the current reference architecture pattern: privileged Docker builds, plaintext environment variables for ECR/ECS deployment, shallow GitHub checkout, tags, a push webhook, and an optional EventBridge subscription to a shared build notifier.
 
 By default, the module creates and manages `/aws/codebuild/<name>` as a CloudWatch log group. Set `create_log_group = false` when migrating an existing CodeBuild project whose log group was previously unmanaged by Terraform, or when the log group is managed externally and plan parity matters.
 
@@ -8,15 +8,15 @@ By default, the module creates and manages `/aws/codebuild/<name>` as a CloudWat
 
 ```hcl
 module "codebuild" {
-	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.1"
+  source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.1"
 
-	name                = var.name
-	codebuild_role_arn  = aws_iam_role.codebuild_role.arn
-	build_docker_image  = var.build_docker_image
-	build_docker_tag    = var.build_docker_tag
-	source_type         = var.source_type
-	source_location     = var.source_location
-	buildspec           = var.buildspec
+  name               = var.name
+  codebuild_role_arn = aws_iam_role.codebuild_role.arn
+  build_docker_image = var.build_docker_image
+  build_docker_tag   = var.build_docker_tag
+  source_type        = var.source_type
+  source_location    = var.source_location
+  buildspec          = var.buildspec
 }
 ```
 
@@ -24,43 +24,49 @@ module "codebuild" {
 
 ```hcl
 module "codebuild" {
-	source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.1.1"
+  source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.9.0"
 
-	name                         = var.name
-	description                  = "Build project for ${var.name}"
-	codebuild_role_arn           = aws_iam_role.codebuild_role.arn
-	build_compute_type           = var.build_compute_type
-	build_docker_image           = var.build_docker_image
-	build_docker_tag             = var.build_docker_tag
-	image_pull_credentials_type  = "CODEBUILD"
-	privileged_mode              = true
-	source_type                  = var.source_type
-	source_location              = var.source_location
-	buildspec                    = var.buildspec
-	git_clone_depth              = 1
-	cache_bucket                 = var.cache_bucket
-	create_log_group            = false
-	webhook_enabled              = true
+  name                               = var.name
+  description                        = "Build project for ${var.name}"
+  codebuild_role_arn                 = aws_iam_role.codebuild_role.arn
+  build_compute_type                 = var.build_compute_type
+  build_docker_image                 = var.build_docker_image
+  build_docker_tag                   = var.build_docker_tag
+  image_pull_credentials_type        = "CODEBUILD"
+  privileged_mode                    = true
+  source_type                        = var.source_type
+  source_location                    = var.source_location
+  buildspec                          = var.buildspec
+  git_clone_depth                    = 1
+  cache_bucket                       = var.cache_bucket
+  create_log_group                   = false
+  webhook_enabled                    = true
+  environment                        = var.environment
+  build_notifier_lambda_function_arn = local.build_notifier_lambda_function_arn
+  build_notifier_app_url             = "https://${var.dns_name}"
+  build_notifier_github_repo_url     = trimsuffix(var.source_location, ".git")
 
-	environment_variables = [
-		{ name = "AWS_DEFAULT_REGION", value = var.region },
-		{ name = "AWS_ACCOUNT_ID", value = data.aws_caller_identity.current.account_id },
-		{ name = "IMAGE_REPO_NAME", value = module.ecr.repository_name },
-		{ name = "IMAGE_TAG", value = var.image_tag },
-		{ name = "CLUSTER_NAME", value = aws_ecs_cluster.main.name },
-		{ name = "SERVICE_NAME", value = aws_ecs_service.main.name },
-		{ name = "CLOUDFLARE_DOMAIN", value = var.cloudflare_domain },
-		{ name = "CLOUDFLARE_SUBDOMAIN", value = var.cloudflare_subdomain },
-	]
+  environment_variables = [
+    { name = "AWS_DEFAULT_REGION", value = var.region },
+    { name = "AWS_ACCOUNT_ID", value = data.aws_caller_identity.current.account_id },
+    { name = "IMAGE_REPO_NAME", value = module.ecr.repository_name },
+    { name = "IMAGE_TAG", value = var.image_tag },
+    { name = "CLUSTER_NAME", value = module.ecs_http_service.cluster_name },
+    { name = "SERVICE_NAME", value = module.ecs_http_service.service_name },
+    { name = "CLOUDFLARE_DOMAIN", value = var.cloudflare_domain },
+    { name = "CLOUDFLARE_SUBDOMAIN", value = var.cloudflare_subdomain },
+  ]
 
-	tags = {
-		Name        = "${var.name}-codebuild"
-		Environment = var.environment
-	}
+  tags = {
+    Name        = "${var.name}-codebuild"
+    Environment = var.environment
+  }
 }
 ```
 
 Use `create_log_group = true` (the default) for new CodeBuild projects or existing users that already let this module manage `/aws/codebuild/<name>`. Use `create_log_group = false` for parity-safe migrations, including reference-architecture, where the existing root configuration did not manage a CloudWatch log group and CodeBuild/AWS default logging should continue to apply.
+
+Set `build_notifier_lambda_function_arn` to opt the project into the shared build notifier. The module then creates the app-owned EventBridge rule, Lambda target, and permission that were previously managed by `build-notifier-project-subscription`.
 
 ## Inputs
 
@@ -71,10 +77,14 @@ Use `create_log_group = true` (the default) for new CodeBuild projects or existi
 | build\_docker\_image | Docker image to use as build environment | string | n/a | yes |
 | build\_docker\_tag | Docker image tag to use as build environment | string | n/a | yes |
 | buildspec | The CodeBuild build spec declaration path - see https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html | string | n/a | yes |
+| build\_notifier\_app\_url | Public application URL included in shared build notification messages. | string | `""` | no |
+| build\_notifier\_github\_repo\_url | GitHub repository URL used to render commit links in shared build notification messages. | string | `""` | no |
+| build\_notifier\_lambda\_function\_arn | ARN of the shared build notification formatter Lambda. Leave empty to skip creating an EventBridge subscription. | string | `""` | no |
 | cache\_bucket | S3 bucket to use as build cache, the value must be a valid S3 bucket name/prefix | string | `""` | no |
 | codebuild\_role\_arn | ARN of IAM role that allows CodeBuild to interact with dependent AWS services | string | n/a | yes |
 | create\_log\_group | Whether to create and manage the default /aws/codebuild/&lt;name&gt; CloudWatch log group. Set false when the log group is managed outside this module or when preserving parity with an existing unmanaged/default CodeBuild logging setup. | bool | `true` | no |
 | description | Description for the CodeBuild project. Defaults to the legacy module description when empty. | string | `""` | no |
+| environment | Environment tag value used by optional child resources. Defaults to tags.Environment or prod. | string | `null` | no |
 | environment\_variables | Environment variables for the build environment. Each item supports name, value, and optional type. | list(map(string)) | `[]` | no |
 | git\_clone\_depth | Optional git clone depth for source checkout. | number | `null` | no |
 | image\_pull\_credentials\_type | Type of credentials CodeBuild uses to pull the build image. Leave empty to use the AWS provider default. | string | `""` | no |
@@ -96,3 +106,5 @@ Use `create_log_group = true` (the default) for new CodeBuild projects or existi
 | project\_name | CodeBuild project name. |
 | project\_arn | CodeBuild project ARN. |
 | project\_id | CodeBuild project ID. |
+| build\_notification\_event\_rule\_arn | EventBridge rule ARN when shared build notifier subscription is enabled. |
+| build\_notification\_event\_rule\_name | EventBridge rule name when shared build notifier subscription is enabled. |

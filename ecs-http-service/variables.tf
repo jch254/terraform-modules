@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Name of the application. Used to derive default ECS names."
+  description = "Name of the application. Used to derive default resource names."
   type        = string
 }
 
@@ -9,13 +9,50 @@ variable "environment" {
   default     = "prod"
 }
 
+variable "vpc_id" {
+  description = "ID of the VPC where the service runs."
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "Subnet IDs used by API Gateway VPC Link and ECS tasks."
+  type        = list(string)
+}
+
+variable "image" {
+  description = "Container image URI, including tag."
+  type        = string
+}
+
+variable "execution_role_arn" {
+  description = "ARN of the ECS task execution role."
+  type        = string
+}
+
+variable "task_role_arn" {
+  description = "ARN of the ECS task role."
+  type        = string
+}
+
+variable "container_port" {
+  description = "Container port exposed by the task and proxied by API Gateway."
+  type        = number
+  default     = 3000
+}
+
+variable "host_port" {
+  description = "Host port for the container port mapping. Defaults to container_port."
+  type        = number
+  default     = null
+}
+
 variable "cluster_name" {
   description = "ECS cluster name. Defaults to <name>-cluster."
   type        = string
   default     = null
 }
 
-variable "service_name" {
+variable "ecs_service_name" {
   description = "ECS service name. Defaults to <name>-service."
   type        = string
   default     = null
@@ -33,11 +70,6 @@ variable "container_name" {
   default     = null
 }
 
-variable "image" {
-  description = "Container image URI, including tag."
-  type        = string
-}
-
 variable "cpu" {
   description = "Fargate task CPU units."
   type        = number
@@ -50,38 +82,16 @@ variable "memory" {
   default     = 512
 }
 
-variable "execution_role_arn" {
-  description = "ARN of the ECS task execution role."
-  type        = string
-}
-
-variable "task_role_arn" {
-  description = "ARN of the ECS task role."
-  type        = string
-}
-
-variable "container_port" {
-  description = "Container port exposed by the task and registered in Cloud Map."
-  type        = number
-  default     = 3000
-}
-
-variable "host_port" {
-  description = "Host port for the container port mapping. Defaults to container_port."
-  type        = number
-  default     = null
-}
-
 variable "log_group_name" {
-  description = "CloudWatch log group name used by the awslogs container log driver."
+  description = "CloudWatch log group name used by the awslogs container log driver. Defaults to /ecs/<name>."
   type        = string
   default     = null
 }
 
 variable "create_log_group" {
-  description = "Whether this module creates the CloudWatch log group used by the ECS task."
+  description = "Whether to create the CloudWatch log group used by the ECS task."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "log_retention_in_days" {
@@ -97,7 +107,7 @@ variable "log_group_tags" {
 }
 
 variable "log_region" {
-  description = "AWS region used by the awslogs container log driver. Defaults to region when set by the caller through log_region."
+  description = "AWS region used by the awslogs container log driver."
   type        = string
 }
 
@@ -108,7 +118,7 @@ variable "log_stream_prefix" {
 }
 
 variable "environment_variables" {
-  description = "Container environment variables. Keep app-specific values in the consumer module."
+  description = "Container environment variables."
   type = list(object({
     name  = string
     value = string
@@ -149,25 +159,10 @@ variable "essential" {
   default     = true
 }
 
-variable "subnet_ids" {
-  description = "Subnet IDs for the ECS service network configuration."
-  type        = list(string)
-}
-
-variable "security_group_id" {
-  description = "Security group ID attached to ECS tasks."
-  type        = string
-}
-
 variable "assign_public_ip" {
   description = "Whether ECS tasks receive a public IP address."
   type        = bool
   default     = true
-}
-
-variable "cloudmap_service_arn" {
-  description = "Cloud Map service ARN used by the ECS service registry."
-  type        = string
 }
 
 variable "desired_count" {
@@ -224,8 +219,68 @@ variable "cpu_architecture" {
   default     = "X86_64"
 }
 
+variable "cloudmap_namespace_name" {
+  description = "Private DNS namespace name. Defaults to <name>.local."
+  type        = string
+  default     = null
+}
+
+variable "cloudmap_service_name" {
+  description = "Cloud Map service name. Defaults to <name>-service."
+  type        = string
+  default     = null
+}
+
+variable "cloudmap_dns_record_type" {
+  description = "Cloud Map DNS record type."
+  type        = string
+  default     = "SRV"
+}
+
+variable "cloudmap_dns_record_ttl" {
+  description = "Cloud Map DNS record TTL in seconds."
+  type        = number
+  default     = 1
+}
+
+variable "cloudmap_routing_policy" {
+  description = "Cloud Map DNS routing policy."
+  type        = string
+  default     = "MULTIVALUE"
+}
+
+variable "cloudmap_failure_threshold" {
+  description = "Custom health check failure threshold."
+  type        = number
+  default     = 1
+}
+
+variable "route_key" {
+  description = "HTTP API route key."
+  type        = string
+  default     = "$default"
+}
+
+variable "stage_name" {
+  description = "HTTP API stage name."
+  type        = string
+  default     = "$default"
+}
+
+variable "auto_deploy" {
+  description = "Whether API Gateway automatically deploys changes to the stage."
+  type        = bool
+  default     = true
+}
+
+variable "integration_method" {
+  description = "HTTP method used by the Cloud Map HTTP proxy integration."
+  type        = string
+  default     = "ANY"
+}
+
 variable "tags" {
-  description = "Additional tags to apply to ECS resources."
+  description = "Additional tags to apply to resources."
   type        = map(string)
   default     = {}
 }

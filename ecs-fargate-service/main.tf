@@ -4,6 +4,7 @@ locals {
   task_family    = coalesce(var.task_family, var.name)
   container_name = coalesce(var.container_name, var.name)
   host_port      = coalesce(var.host_port, var.container_port)
+  log_group_name = coalesce(var.log_group_name, "/ecs/${var.name}")
 
   cluster_tags = merge(
     {
@@ -28,6 +29,23 @@ locals {
     },
     var.tags,
   )
+
+  log_group_tags = merge(
+    {
+      Name        = "${var.name}-logs"
+      Environment = var.environment
+    },
+    var.tags,
+    var.log_group_tags,
+  )
+}
+
+resource "aws_cloudwatch_log_group" "main" {
+  count = var.create_log_group ? 1 : 0
+
+  name              = local.log_group_name
+  retention_in_days = var.log_retention_in_days
+  tags              = local.log_group_tags
 }
 
 resource "aws_ecs_cluster" "main" {
@@ -70,7 +88,7 @@ resource "aws_ecs_task_definition" "main" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = var.log_group_name
+          "awslogs-group"         = local.log_group_name
           "awslogs-region"        = var.log_region
           "awslogs-stream-prefix" = var.log_stream_prefix
         }

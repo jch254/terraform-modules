@@ -1,8 +1,8 @@
 # ecs-fargate-service
 
-Manages an ECS Fargate cluster, task definition, and service.
+Manages an ECS Fargate cluster, task definition, service, and optionally the CloudWatch log group used by the task.
 
-This module accepts IAM roles, security groups, subnets, Cloud Map service, log group, image, environment variables, and secrets as inputs so application-specific values remain in the consuming stack.
+This module accepts IAM roles, security groups, subnets, Cloud Map service, image, environment variables, and secrets as inputs so application-specific values remain in the consuming stack. Set `create_log_group = true` to let the module own `/ecs/<name>` or pass `log_group_name` for an externally managed log group.
 
 ## Example
 
@@ -19,8 +19,9 @@ module "ecs_fargate_service" {
   execution_role_arn = module.app_runtime_iam.execution_role_arn
   task_role_arn      = module.app_runtime_iam.task_role_arn
 
-  log_group_name = module.app_log_group.name
-  log_region     = var.region
+  create_log_group       = true
+  log_retention_in_days  = 7
+  log_region             = var.region
 
   subnet_ids         = data.aws_subnets.public.ids
   security_group_id  = module.app_security_groups.ecs_security_group_id
@@ -56,6 +57,7 @@ Expected move targets:
 moved { from = aws_ecs_cluster.main to = module.ecs_fargate_service.aws_ecs_cluster.main }
 moved { from = aws_ecs_task_definition.main to = module.ecs_fargate_service.aws_ecs_task_definition.main }
 moved { from = aws_ecs_service.main to = module.ecs_fargate_service.aws_ecs_service.main }
+moved { from = module.app_log_group.aws_cloudwatch_log_group.main to = module.ecs_fargate_service.aws_cloudwatch_log_group.main[0] }
 ```
 
 During consumer migration, confirm subnet ordering, security group ID, service registry ARN, task family, service name, and deployment settings all remain unchanged.

@@ -2,7 +2,7 @@
 
 Deploys the shared build notification core: an SNS topic, email subscription, and Lambda formatter that publishes formatted CodeBuild build notifications.
 
-Apps can opt in by using `build-notifier-project-subscription`, which creates an app-owned EventBridge rule and Lambda permission targeting this shared formatter. For backwards-compatible single-root deployments, this module can still create an EventBridge rule when `codebuild_project_names` is non-empty.
+Apps can opt in by passing this module's `lambda_function_arn` output into `codebuild-project` with `build_notifier_lambda_function_arn`. For consumers that do not use `codebuild-project`, `build-notifier-project-subscription` remains available as the lower-level app-owned EventBridge rule and Lambda permission module. For backwards-compatible single-root deployments, this module can still create an EventBridge rule when `codebuild_project_names` is non-empty.
 
 Internally:
 
@@ -36,19 +36,22 @@ module "build_notifier" {
 }
 ```
 
-Then subscribe an app-owned CodeBuild project from the app repo:
+Then subscribe an app-owned CodeBuild project from the app repo through `codebuild-project`:
 
 ```hcl
-module "build_notifier_subscription" {
-  source = "git::https://github.com/jch254/terraform-modules.git//build-notifier-project-subscription?ref=<version>"
+module "codebuild_project" {
+  source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=<version>"
 
-  name                = var.name
-  environment         = var.environment
-  lambda_function_arn = module.build_notifier.lambda_function_arn
-  app_url             = "https://${var.dns_name}"
-  github_repo_url     = trimsuffix(var.source_location, ".git")
-
-  codebuild_project_names = [module.codebuild_project.project_name]
+  name                               = var.name
+  codebuild_role_arn                 = aws_iam_role.codebuild_role.arn
+  build_docker_image                 = var.build_docker_image
+  build_docker_tag                   = var.build_docker_tag
+  source_type                        = var.source_type
+  source_location                    = var.source_location
+  buildspec                          = var.buildspec
+  build_notifier_lambda_function_arn = module.build_notifier.lambda_function_arn
+  build_notifier_app_url             = "https://${var.dns_name}"
+  build_notifier_github_repo_url     = trimsuffix(var.source_location, ".git")
 }
 ```
 
@@ -59,7 +62,7 @@ module "build_notifier_subscription" {
 | `name` | Resource name prefix. | `string` | required |
 | `environment` | Environment tag value. | `string` | required |
 | `notification_email` | Email subscribed to the SNS topic. | `string` | required |
-| `codebuild_project_names` | Optional CodeBuild project names whose state changes trigger notifications from this module. Leave empty when app repos subscribe with `build-notifier-project-subscription`. | `list(string)` | `[]` |
+| `codebuild_project_names` | Optional CodeBuild project names whose state changes trigger notifications from this module. Leave empty when app repos subscribe through `codebuild-project` or `build-notifier-project-subscription`. | `list(string)` | `[]` |
 | `app_url` | Public application URL surfaced in the notification body for optional inline subscriptions. | `string` | `""` |
 | `github_repo_url` | Repository URL used for commit links for optional inline subscriptions. | `string` | `""` |
 | `lambda_runtime` | Lambda runtime for the formatter. | `string` | `"nodejs22.x"` |
