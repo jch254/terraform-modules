@@ -54,6 +54,7 @@ real apps
 | --- | --- |
 | `ecr-repository` | ECR repository for container images, with optional lifecycle policy and image scanning settings. |
 | `dynamodb-single-table` | DynamoDB single-table module with optional range key, TTL, and configurable GSIs. |
+| `codebuild-terraform-role` | IAM role and policy for CodeBuild projects that run Terraform deploys across app or platform roots. |
 | `codebuild-project` | Standalone CodeBuild project module, with optional app-owned subscription to the shared build notifier. |
 | `app-log-group` | CloudWatch application log group for ECS runtime logs. Kept for compatibility; new ECS Fargate consumers can let `ecs-fargate-service` create the log group directly. |
 | `app-runtime-iam` | ECS task execution role, task role, and runtime IAM policies. |
@@ -163,7 +164,7 @@ source = "github.com/jch254/terraform-modules//ecs-fargate-service?ref=1.7.0"
 
 ## Tags and versioning
 
-This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.9.0`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
+This repo uses a single repo-wide tag stream (`1.0.0`, `1.1.0`, ..., `1.10.0`). Every module is versioned together — consuming apps use the same `?ref=<tag>` for every module they pull from this repo.
 
 Versioning follows a pragmatic SemVer:
 
@@ -230,6 +231,7 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.8.3`: `build-notifier` formatter Lambda runs on Node.js 22.x.
 - `1.8.4`: rebuilds the `build-notifier` formatter artifact so shared app subscriptions can pass wrapped event metadata.
 - `1.9.0`: adds `ecs-http-service` as the standard ECS HTTP runtime composite, lets `ecs-fargate-service` own the app log group, and lets `codebuild-project` create the app-owned shared build notifier subscription.
+- `1.10.0`: adds `codebuild-terraform-role` for shared CodeBuild Terraform deploy IAM across app and platform roots.
 
 ## License
 
