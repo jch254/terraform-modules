@@ -62,7 +62,7 @@ module "build_notifier_subscription" {
 | `codebuild_project_names` | Optional CodeBuild project names whose state changes trigger notifications from this module. Leave empty when app repos subscribe with `build-notifier-project-subscription`. | `list(string)` | `[]` |
 | `app_url` | Public application URL surfaced in the notification body for optional inline subscriptions. | `string` | `""` |
 | `github_repo_url` | Repository URL used for commit links for optional inline subscriptions. | `string` | `""` |
-| `lambda_runtime` | Lambda runtime for the formatter. | `string` | `"nodejs20.x"` |
+| `lambda_runtime` | Lambda runtime for the formatter. | `string` | `"nodejs22.x"` |
 
 ## Outputs
 

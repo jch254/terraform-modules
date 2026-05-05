@@ -34,5 +34,5 @@ variable "github_repo_url" {
 variable "lambda_runtime" {
   description = "Lambda runtime for the formatter."
   type        = string
-  default     = "nodejs20.x"
+  default     = "nodejs22.x"
 }
