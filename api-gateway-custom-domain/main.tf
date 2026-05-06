@@ -1,7 +1,7 @@
 locals {
   tags = merge(
     {
-      Name = var.domain_name
+      Name = replace(var.domain_name, "*", "wildcard")
     },
     var.tags,
   )

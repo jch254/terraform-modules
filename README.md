@@ -239,6 +239,7 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.13.1`: `codebuild-terraform-role` gains `enable_acm` and `acm_resource_arns` for ACM certificate Terraform permissions including tag mutations. Consumers managing ACM certs through Terraform should set `enable_acm = true` to grant `acm:AddTagsToCertificate`, `acm:RemoveTagsFromCertificate`, and the rest of the standard ACM lifecycle actions. Default `false` preserves prior behaviour.
 - `1.14.0`: `codebuild-terraform-role` supports regional CodeBuild assume-role principals and Lambda code-signing reads, `app-runtime-iam` includes DynamoDB `BatchWriteItem`, and `build-notifier` exposes `lambda_timeout` for adopting existing formatter Lambdas without timeout drift.
 - `1.15.0`: `ecs-http-service` and `http-api-cloudmap-proxy` can preserve HTTP API stage access logs, `app-runtime-iam` lets consumers override DynamoDB task-role actions for apps that need broader table/index access, and `codebuild-terraform-role` includes DynamoDB table updates.
+- `1.15.1`: `api-gateway-custom-domain` sanitizes the auto `Name` tag for wildcard domains (`*` → `wildcard`) so API Gateway v2 tag operations don't reject the value. Apex domains are unaffected; consumers passing an explicit `tags.Name` override continue to win.
 
 ## License
 
