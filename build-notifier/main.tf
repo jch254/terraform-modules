@@ -70,6 +70,7 @@ resource "aws_lambda_function" "formatter" {
   role             = aws_iam_role.lambda.arn
   handler          = "index.handler"
   runtime          = var.lambda_runtime
+  timeout          = var.lambda_timeout
   source_code_hash = data.archive_file.lambda.output_base64sha256
 
   environment {

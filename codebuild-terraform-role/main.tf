@@ -403,6 +403,8 @@ locals {
         "lambda:CreateFunction",
         "lambda:DeleteFunction",
         "lambda:GetFunction",
+        "lambda:GetFunctionCodeSigning",
+        "lambda:GetFunctionCodeSigningConfig",
         "lambda:UpdateFunctionCode",
         "lambda:UpdateFunctionConfiguration",
         "lambda:GetFunctionConfiguration",
@@ -467,7 +469,7 @@ resource "aws_iam_role" "this" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          Service = "codebuild.amazonaws.com"
+          Service = var.assume_role_services
         }
       }
     ]

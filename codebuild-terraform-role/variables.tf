@@ -27,6 +27,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "assume_role_services" {
+  description = "AWS service principals that may assume the role."
+  type        = list(string)
+  default     = ["codebuild.amazonaws.com"]
+}
+
 variable "cloudwatch_logs_actions" {
   description = "CloudWatch Logs actions needed by the build and Terraform-managed log groups. Empty disables the statement."
   type        = list(string)

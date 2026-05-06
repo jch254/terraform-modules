@@ -36,3 +36,9 @@ variable "lambda_runtime" {
   type        = string
   default     = "nodejs22.x"
 }
+
+variable "lambda_timeout" {
+  description = "Lambda timeout in seconds. Leave null to use the AWS provider default."
+  type        = number
+  default     = null
+}

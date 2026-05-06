@@ -66,6 +66,7 @@ module "codebuild_project" {
 | `app_url` | Public application URL surfaced in the notification body for optional inline subscriptions. | `string` | `""` |
 | `github_repo_url` | Repository URL used for commit links for optional inline subscriptions. | `string` | `""` |
 | `lambda_runtime` | Lambda runtime for the formatter. | `string` | `"nodejs22.x"` |
+| `lambda_timeout` | Lambda timeout in seconds. Leave null to use the AWS provider default. | `number` | `null` |
 
 ## Outputs
 

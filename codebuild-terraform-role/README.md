@@ -12,6 +12,10 @@ module "codebuild_terraform_role" {
 
   name        = var.name
   environment = var.environment
+  assume_role_services = [
+    "codebuild.amazonaws.com",
+    "codebuild.${var.region}.amazonaws.com",
+  ]
 
   s3_read_write_resource_arns = ["*"]
   ecr_repository_arns         = [module.ecr_repository.repository_arn]
