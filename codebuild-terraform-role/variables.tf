@@ -103,6 +103,18 @@ variable "enable_route53" {
   default     = false
 }
 
+variable "enable_acm" {
+  description = "Whether to include ACM certificate Terraform permissions (request, describe, delete, and tag mutations)."
+  type        = bool
+  default     = false
+}
+
+variable "acm_resource_arns" {
+  description = "ACM resource ARNs used when enable_acm is true. Tagging APIs typically require '*'."
+  type        = list(string)
+  default     = ["*"]
+}
+
 variable "iam_role_arns" {
   description = "IAM role ARNs this build may manage or pass."
   type        = list(string)

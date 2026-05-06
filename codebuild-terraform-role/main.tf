@@ -221,6 +221,24 @@ locals {
     }
   ] : []
 
+  acm_statements = var.enable_acm ? [
+    {
+      Effect = "Allow"
+      Action = [
+        "acm:RequestCertificate",
+        "acm:DeleteCertificate",
+        "acm:DescribeCertificate",
+        "acm:GetCertificate",
+        "acm:ListCertificates",
+        "acm:RenewCertificate",
+        "acm:AddTagsToCertificate",
+        "acm:RemoveTagsFromCertificate",
+        "acm:ListTagsForCertificate",
+      ]
+      Resource = var.acm_resource_arns
+    }
+  ] : []
+
   iam_statements = length(local.effective_iam_role_arns) == 0 ? [] : [
     {
       Effect = "Allow"
@@ -423,6 +441,7 @@ locals {
     local.api_gateway_statements,
     local.service_discovery_statements,
     local.route53_statements,
+    local.acm_statements,
     local.iam_statements,
     local.sts_statements,
     local.codebuild_statements,
