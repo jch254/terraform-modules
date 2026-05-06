@@ -4,7 +4,7 @@ Creates one Amazon SES receipt rule set, with optional activation.
 
 **Important:** SES allows exactly one active receipt rule set per AWS account and region. Activating a product-local rule set can break inbound mail for every other app in that region.
 
-`activate` defaults to `false`. The only intended place to set `activate = true` is the shared SES owner root, currently `shared-ses-infra`, after every live inbound domain in that account/region is represented in the shared model.
+`activate` defaults to `false`. The only intended place to set `activate = true` is the shared SES owner root, currently `shared-platform`, after every live inbound domain in that account/region is represented in the shared model.
 
 This module intentionally does not manage receipt rules, SES identities, DKIM, DNS records, raw mail buckets, bucket policies, Lambda forwarders, Lambda permissions, IAM, or app parser behavior.
 

@@ -80,7 +80,7 @@ The default action positions match the current live route shape: S3 at position 
 
 ## Migration Notes
 
-Existing live receipt rules must be imported or moved into `shared-ses-infra` state before applying this module. Do not let Terraform delete and recreate live rules during migration; a bad rule plan can interrupt inbound email.
+Existing live receipt rules must be imported or moved into `shared-platform` state before applying this module. Do not let Terraform delete and recreate live rules during migration; a bad rule plan can interrupt inbound email.
 
 Example imports for the current live shared rule set:
 
