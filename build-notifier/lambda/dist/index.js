@@ -62,6 +62,10 @@ function getFailedPhaseDetails(phases) {
 Error Details:
 ${details}` : "";
 }
+function optionalField(label, value) {
+  const trimmed = value.trim();
+  return trimmed ? [`${label}${trimmed}`] : [];
+}
 async function handler(rawEvent) {
   const wrapper = rawEvent;
   const event = wrapper.event?.detail ? wrapper.event : rawEvent;
@@ -99,10 +103,10 @@ async function handler(rawEvent) {
     formatPhaseTable(phases),
     getFailedPhaseDetails(phases),
     ``,
-    `URL:      ${appUrl}`,
-    `Project:  ${projectLink}`,
-    ...commitLink ? [`GitHub:   ${commitLink}`] : [],
-    `Logs:     ${logsLink}`
+    ...optionalField("URL:      ", appUrl),
+    ...optionalField("Project:  ", projectLink),
+    ...optionalField("GitHub:   ", commitLink),
+    ...optionalField("Logs:     ", logsLink)
   ].join("\n").trim();
   await sns.send(new import_client_sns.PublishCommand({ TopicArn: TOPIC_ARN, Subject: subject.substring(0, 100), Message: message }));
 }

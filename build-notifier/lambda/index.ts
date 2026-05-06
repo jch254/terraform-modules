@@ -87,6 +87,11 @@ function getFailedPhaseDetails(phases: CodeBuildPhase[]): string {
   return details ? `\nError Details:\n${details}` : "";
 }
 
+function optionalField(label: string, value: string): string[] {
+  const trimmed = value.trim();
+  return trimmed ? [`${label}${trimmed}`] : [];
+}
+
 export async function handler(rawEvent: CodeBuildEvent | BuildNotifierEvent): Promise<void> {
   const wrapper = rawEvent as BuildNotifierEvent;
   const event = wrapper.event?.detail ? wrapper.event : rawEvent as CodeBuildEvent;
@@ -124,10 +129,10 @@ export async function handler(rawEvent: CodeBuildEvent | BuildNotifierEvent): Pr
     formatPhaseTable(phases),
     getFailedPhaseDetails(phases),
     ``,
-    `URL:      ${appUrl}`,
-    `Project:  ${projectLink}`,
-    ...(commitLink ? [`GitHub:   ${commitLink}`] : []),
-    `Logs:     ${logsLink}`,
+    ...optionalField("URL:      ", appUrl),
+    ...optionalField("Project:  ", projectLink),
+    ...optionalField("GitHub:   ", commitLink),
+    ...optionalField("Logs:     ", logsLink),
   ].join("\n").trim();
   await sns.send(new PublishCommand({ TopicArn: TOPIC_ARN, Subject: subject.substring(0, 100), Message: message }));
 }
