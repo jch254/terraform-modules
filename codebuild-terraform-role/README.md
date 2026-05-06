@@ -8,7 +8,7 @@ The module is intentionally generic across project shapes. Consumers opt into AW
 
 ```hcl
 module "codebuild_terraform_role" {
-  source = "github.com/jch254/terraform-modules//codebuild-terraform-role?ref=1.10.0"
+  source = "github.com/jch254/terraform-modules//codebuild-terraform-role?ref=1.12.0"
 
   name        = var.name
   environment = var.environment
@@ -21,24 +21,26 @@ module "codebuild_terraform_role" {
   enable_service_discovery    = true
   enable_route53              = true
 
-  iam_role_arns       = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.name}-*"]
   codebuild_project_arns = ["*"]
-  ssm_parameter_arns  = ["arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/${var.name}/*"]
-  dynamodb_table_arns = ["arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${var.name}-*"]
-  event_rule_arns     = ["arn:aws:events:${var.region}:${data.aws_caller_identity.current.account_id}:rule/${var.name}-*"]
+
+  prefix_managed_services = [
+    "iam_role",
+    "ssm_parameter",
+    "dynamodb_table",
+    "event_rule",
+    "lambda_function",
+    "sns_topic",
+  ]
 
   lambda_permission_function_arns = [local.shared_build_notifier_lambda_arn]
-
-  tags = {
-    Environment = var.environment
-  }
 }
 ```
 
-For platform/shared roots, pass only the resource families they actually manage, for example SES, SNS, Lambda, EventBridge, IAM, S3 state/cache, and CodeBuild.
+For platform/shared roots, pass only the resource families they actually manage, for example SES, SNS, Lambda, EventBridge, IAM, S3 state/cache, and CodeBuild. When wildcard ARNs need to target a different region than the provider's region (e.g. a build notifier in another region), pass them explicitly via the per-service `*_arns` inputs instead of using `prefix_managed_services` for that service.
 
 ## Notes
 
 - `sts:GetCallerIdentity` is always included because Terraform and deploy scripts commonly use it.
 - `additional_policy_statements` is available for project-specific edge cases, but prefer adding a focused input when the permission is likely to recur.
 - S3 can be modeled broadly with `s3_read_write_resource_arns = ["*"]` for parity migrations, or more tightly with `s3_bucket_arns` and `s3_object_arns`.
+- `prefix_managed_services` synthesizes wildcard ARNs from `name_prefix` (defaulting to `var.name`) for the listed services. Synthesized ARNs target the provider's current region and account. Synthesized entries are appended to any explicit `*_arns` you pass — both coexist.

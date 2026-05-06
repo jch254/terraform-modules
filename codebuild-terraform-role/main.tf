@@ -1,3 +1,7 @@
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
 locals {
   role_name   = coalesce(var.role_name, "${var.name}-codebuild")
   policy_name = coalesce(var.policy_name, "${var.name}-codebuild-policy")
@@ -9,6 +13,41 @@ locals {
     },
     var.tags,
   )
+
+  effective_name_prefix = coalesce(var.name_prefix, var.name)
+  account_id            = data.aws_caller_identity.current.account_id
+  region                = data.aws_region.current.name
+
+  prefix_iam_role_arns = contains(var.prefix_managed_services, "iam_role") ? [
+    "arn:aws:iam::${local.account_id}:role/${local.effective_name_prefix}-*",
+  ] : []
+
+  prefix_lambda_function_arns = contains(var.prefix_managed_services, "lambda_function") ? [
+    "arn:aws:lambda:${local.region}:${local.account_id}:function:${local.effective_name_prefix}-*",
+  ] : []
+
+  prefix_dynamodb_table_arns = contains(var.prefix_managed_services, "dynamodb_table") ? [
+    "arn:aws:dynamodb:${local.region}:${local.account_id}:table/${local.effective_name_prefix}-*",
+  ] : []
+
+  prefix_sns_topic_arns = contains(var.prefix_managed_services, "sns_topic") ? [
+    "arn:aws:sns:${local.region}:${local.account_id}:${local.effective_name_prefix}-*",
+  ] : []
+
+  prefix_event_rule_arns = contains(var.prefix_managed_services, "event_rule") ? [
+    "arn:aws:events:${local.region}:${local.account_id}:rule/${local.effective_name_prefix}-*",
+  ] : []
+
+  prefix_ssm_parameter_arns = contains(var.prefix_managed_services, "ssm_parameter") ? [
+    "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${local.effective_name_prefix}/*",
+  ] : []
+
+  effective_iam_role_arns        = concat(var.iam_role_arns, local.prefix_iam_role_arns)
+  effective_lambda_function_arns = concat(var.lambda_function_arns, local.prefix_lambda_function_arns)
+  effective_dynamodb_table_arns  = concat(var.dynamodb_table_arns, local.prefix_dynamodb_table_arns)
+  effective_sns_topic_arns       = concat(var.sns_topic_arns, local.prefix_sns_topic_arns)
+  effective_event_rule_arns      = concat(var.event_rule_arns, local.prefix_event_rule_arns)
+  effective_ssm_parameter_arns   = concat(var.ssm_parameter_arns, local.prefix_ssm_parameter_arns)
 
   logs_statements = length(var.cloudwatch_logs_actions) == 0 ? [] : [
     {
@@ -182,7 +221,7 @@ locals {
     }
   ] : []
 
-  iam_statements = length(var.iam_role_arns) == 0 ? [] : [
+  iam_statements = length(local.effective_iam_role_arns) == 0 ? [] : [
     {
       Effect = "Allow"
       Action = [
@@ -202,7 +241,7 @@ locals {
         "iam:TagRole",
         "iam:UntagRole",
       ]
-      Resource = var.iam_role_arns
+      Resource = local.effective_iam_role_arns
     }
   ]
 
@@ -230,7 +269,7 @@ locals {
     }
   ]
 
-  ssm_statements = length(var.ssm_parameter_arns) == 0 ? [] : [
+  ssm_statements = length(local.effective_ssm_parameter_arns) == 0 ? [] : [
     {
       Effect   = "Allow"
       Action   = ["ssm:DescribeParameters"]
@@ -247,7 +286,7 @@ locals {
         "ssm:RemoveTagsFromResource",
         "ssm:ListTagsForResource",
       ]
-      Resource = var.ssm_parameter_arns
+      Resource = local.effective_ssm_parameter_arns
     }
   ]
 
@@ -259,7 +298,7 @@ locals {
     }
   ]
 
-  dynamodb_statements = length(var.dynamodb_table_arns) == 0 ? [] : [
+  dynamodb_statements = length(local.effective_dynamodb_table_arns) == 0 ? [] : [
     {
       Effect = "Allow"
       Action = [
@@ -273,7 +312,7 @@ locals {
         "dynamodb:TagResource",
         "dynamodb:UntagResource",
       ]
-      Resource = var.dynamodb_table_arns
+      Resource = local.effective_dynamodb_table_arns
     }
   ]
 
@@ -301,7 +340,7 @@ locals {
     }
   ] : []
 
-  sns_statements = length(var.sns_topic_arns) == 0 ? [] : [
+  sns_statements = length(local.effective_sns_topic_arns) == 0 ? [] : [
     {
       Effect = "Allow"
       Action = [
@@ -317,11 +356,11 @@ locals {
         "sns:TagResource",
         "sns:UntagResource",
       ]
-      Resource = var.sns_topic_arns
+      Resource = local.effective_sns_topic_arns
     }
   ]
 
-  eventbridge_statements = length(var.event_rule_arns) == 0 ? [] : [
+  eventbridge_statements = length(local.effective_event_rule_arns) == 0 ? [] : [
     {
       Effect = "Allow"
       Action = [
@@ -335,11 +374,11 @@ locals {
         "events:TagResource",
         "events:UntagResource",
       ]
-      Resource = var.event_rule_arns
+      Resource = local.effective_event_rule_arns
     }
   ]
 
-  lambda_statements = length(var.lambda_function_arns) == 0 ? [] : [
+  lambda_statements = length(local.effective_lambda_function_arns) == 0 ? [] : [
     {
       Effect = "Allow"
       Action = [
@@ -357,7 +396,7 @@ locals {
         "lambda:UntagResource",
         "lambda:ListTags",
       ]
-      Resource = var.lambda_function_arns
+      Resource = local.effective_lambda_function_arns
     }
   ]
 

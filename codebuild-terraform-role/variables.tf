@@ -174,3 +174,23 @@ variable "additional_policy_statements" {
   type        = list(any)
   default     = []
 }
+
+variable "name_prefix" {
+  description = "Prefix used to synthesize wildcard ARNs for services listed in prefix_managed_services. Defaults to var.name when null."
+  type        = string
+  default     = null
+}
+
+variable "prefix_managed_services" {
+  description = "Set of services for which to auto-append wildcard ARNs based on name_prefix to their respective *_arns inputs. Supported values: iam_role, lambda_function, dynamodb_table, sns_topic, event_rule, ssm_parameter. Synthesized ARNs target the provider's current region and account."
+  type        = set(string)
+  default     = []
+
+  validation {
+    condition = length([
+      for svc in var.prefix_managed_services :
+      svc if !contains(["iam_role", "lambda_function", "dynamodb_table", "sns_topic", "event_rule", "ssm_parameter"], svc)
+    ]) == 0
+    error_message = "prefix_managed_services may only contain: iam_role, lambda_function, dynamodb_table, sns_topic, event_rule, ssm_parameter."
+  }
+}
