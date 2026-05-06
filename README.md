@@ -235,6 +235,7 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.10.0`: adds `codebuild-terraform-role` for shared CodeBuild Terraform deploy IAM across app and platform roots.
 - `1.11.0`: adds `ssm-parameter-placeholder` so secret-style SSM parameters can be created with a placeholder value and the real value set out-of-band, replacing inlined `aws_ssm_parameter` resources with `lifecycle { ignore_changes = [value] }`.
 - `1.12.0`: `codebuild-terraform-role` gains `name_prefix` and `prefix_managed_services` so consumers can opt into auto-synthesized wildcard ARNs (`${name}-*`) for IAM roles, Lambda functions, DynamoDB tables, SNS topics, EventBridge rules, and SSM parameters instead of repeating the same templated ARN strings per service. Additive — existing explicit `*_arns` inputs continue to work unchanged.
+- `1.13.0`: `acm-dns-validated-certificate`, `api-gateway-custom-domain`, `codebuild-project`, and `ssm-parameter-placeholder` now set a default `Name` tag (the domain name, project name, or sanitized parameter path) so consumers no longer need to pass `tags = { Name = "..." }` blocks. Consumers can still override via `tags`. Note: bumping to `1.13.0` will rewrite the `Name` tag value where consumers previously passed an explicit override — this is a tag-only diff (no resource recreation, no plan churn beyond `~ tags`).
 
 ## License
 

@@ -4,6 +4,13 @@ locals {
   validation_record_names = sort(distinct([
     for option in aws_acm_certificate.main.domain_validation_options : option.resource_record_name
   ]))
+
+  tags = merge(
+    {
+      Name = var.domain_name
+    },
+    var.tags,
+  )
 }
 
 resource "aws_acm_certificate" "main" {
@@ -15,5 +22,5 @@ resource "aws_acm_certificate" "main" {
     create_before_destroy = true
   }
 
-  tags = var.tags
+  tags = local.tags
 }

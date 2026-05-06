@@ -1,3 +1,12 @@
+locals {
+  tags = merge(
+    {
+      Name = var.domain_name
+    },
+    var.tags,
+  )
+}
+
 resource "aws_apigatewayv2_domain_name" "main" {
   domain_name = var.domain_name
 
@@ -7,7 +16,7 @@ resource "aws_apigatewayv2_domain_name" "main" {
     security_policy = var.security_policy
   }
 
-  tags = var.tags
+  tags = local.tags
 }
 
 resource "aws_apigatewayv2_api_mapping" "main" {

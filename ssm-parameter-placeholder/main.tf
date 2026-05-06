@@ -1,7 +1,9 @@
 locals {
+  default_name_tag = replace(trimprefix(var.name, "/"), "/", "-")
+
   tags = merge(
     {
-      Name = var.name
+      Name = local.default_name_tag
     },
     var.tags,
   )

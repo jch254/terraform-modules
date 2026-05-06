@@ -1,6 +1,13 @@
 locals {
   environment = coalesce(var.environment, lookup(var.tags, "Environment", "prod"))
 
+  tags = merge(
+    {
+      Name = var.name
+    },
+    var.tags,
+  )
+
   default_webhook_filter_groups = [[
     {
       type    = "EVENT"
@@ -20,7 +27,7 @@ resource "aws_cloudwatch_log_group" "codebuild_lg" {
 
   name              = "/aws/codebuild/${var.name}"
   retention_in_days = var.log_retention
-  tags              = var.tags
+  tags              = local.tags
 }
 
 resource "aws_codebuild_project" "codebuild_project" {
@@ -63,7 +70,7 @@ resource "aws_codebuild_project" "codebuild_project" {
     location = var.cache_bucket
   }
 
-  tags = var.tags
+  tags = local.tags
 }
 
 resource "aws_codebuild_webhook" "codebuild_webhook" {
