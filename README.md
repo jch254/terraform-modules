@@ -55,7 +55,7 @@ real apps
 | `ecr-repository` | ECR repository for container images, with optional lifecycle policy and image scanning settings. |
 | `dynamodb-single-table` | DynamoDB single-table module with optional range key, TTL, and configurable GSIs. |
 | `codebuild-terraform-role` | IAM role and policy for CodeBuild projects that run Terraform deploys across app or platform roots. |
-| `codebuild-project` | Standalone CodeBuild project module, with optional app-owned subscription to the shared build notifier. |
+| `codebuild-project` | Standalone CodeBuild project module, with optional app-owned subscription to the shared build notifier and webhook replacement when the source repository URL changes. |
 | `app-log-group` | CloudWatch application log group for ECS runtime logs. Kept for compatibility; new ECS Fargate consumers can let `ecs-fargate-service` create the log group directly. |
 | `app-runtime-iam` | ECS task execution role, task role, and runtime IAM policies. |
 | `app-security-groups` | API Gateway VPC Link and ECS task security groups. |
@@ -240,6 +240,7 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.14.0`: `codebuild-terraform-role` supports regional CodeBuild assume-role principals and Lambda code-signing reads, `app-runtime-iam` includes DynamoDB `BatchWriteItem`, and `build-notifier` exposes `lambda_timeout` for adopting existing formatter Lambdas without timeout drift.
 - `1.15.0`: `ecs-http-service` and `http-api-cloudmap-proxy` can preserve HTTP API stage access logs, `app-runtime-iam` lets consumers override DynamoDB task-role actions for apps that need broader table/index access, and `codebuild-terraform-role` includes DynamoDB table updates.
 - `1.15.1`: `api-gateway-custom-domain` sanitizes the auto `Name` tag for wildcard domains (`*` → `wildcard`) so API Gateway v2 tag operations don't reject the value. Apex domains are unaffected; consumers passing an explicit `tags.Name` override continue to win.
+- `1.15.2`: `codebuild-project` recreates `aws_codebuild_webhook` when the CodeBuild project source URL changes. This works around GitHub repository renames invalidating the underlying webhook while AWS CodeBuild and Terraform still report the webhook as present.
 
 ## License
 

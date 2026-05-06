@@ -79,6 +79,14 @@ resource "aws_codebuild_webhook" "codebuild_webhook" {
   project_name = aws_codebuild_project.codebuild_project.name
   build_type   = var.webhook_build_type
 
+  lifecycle {
+    # AWS/CodeBuild can keep reporting the webhook as present after GitHub
+    # invalidates it during a repository rename. Recreate it with source changes.
+    replace_triggered_by = [
+      aws_codebuild_project.codebuild_project.source[0].location,
+    ]
+  }
+
   dynamic "filter_group" {
     for_each = local.webhook_filter_groups
 

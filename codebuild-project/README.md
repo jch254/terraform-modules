@@ -4,6 +4,8 @@ Creates a standalone CodeBuild project. Defaults preserve the original module be
 
 By default, the module creates and manages `/aws/codebuild/<name>` as a CloudWatch log group. Set `create_log_group = false` when migrating an existing CodeBuild project whose log group was previously unmanaged by Terraform, or when the log group is managed externally and plan parity matters.
 
+When `webhook_enabled = true`, the webhook is replaced whenever the CodeBuild project source URL changes. This works around a CodeBuild/GitHub/provider gap where a GitHub repository rename can leave the webhook missing or invalid even though CodeBuild and Terraform still report a healthy webhook resource.
+
 ## Legacy Example
 
 ```hcl
@@ -24,7 +26,7 @@ module "codebuild" {
 
 ```hcl
 module "codebuild" {
-  source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.9.0"
+  source = "git::https://github.com/jch254/terraform-modules.git//codebuild-project?ref=1.15.2"
 
   name                               = var.name
   description                        = "Build project for ${var.name}"
