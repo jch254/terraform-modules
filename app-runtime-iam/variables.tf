@@ -24,6 +24,20 @@ variable "dynamodb_table_arn" {
   type        = string
 }
 
+variable "dynamodb_actions" {
+  description = "DynamoDB actions granted to the ECS task role for the app table and indexes."
+  type        = list(string)
+  default = [
+    "dynamodb:GetItem",
+    "dynamodb:PutItem",
+    "dynamodb:UpdateItem",
+    "dynamodb:DeleteItem",
+    "dynamodb:BatchWriteItem",
+    "dynamodb:Query",
+    "dynamodb:DescribeTable",
+  ]
+}
+
 variable "tags" {
   description = "Additional tags to apply to IAM roles."
   type        = map(string)

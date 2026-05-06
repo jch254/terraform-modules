@@ -15,7 +15,7 @@ Custom domains, ACM certificates, DNS records, ECR repositories, DynamoDB tables
 
 ```hcl
 module "ecs_http_service" {
-  source = "github.com/jch254/terraform-modules//ecs-http-service?ref=1.9.0"
+  source = "github.com/jch254/terraform-modules//ecs-http-service?ref=1.15.0"
 
   name        = var.name
   environment = var.environment
@@ -29,15 +29,13 @@ module "ecs_http_service" {
   task_role_arn      = module.app_runtime_iam.task_role_arn
 
   log_region = var.region
+  access_log_destination_arn = aws_cloudwatch_log_group.api_gateway.arn
+  access_log_format          = local.api_access_log_format
 
   environment_variables = [
     { name = "PORT", value = "3000" },
     { name = "AWS_REGION", value = var.region },
   ]
-
-  tags = {
-    Environment = var.environment
-  }
 }
 ```
 

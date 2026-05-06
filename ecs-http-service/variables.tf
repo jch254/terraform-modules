@@ -273,6 +273,18 @@ variable "auto_deploy" {
   default     = true
 }
 
+variable "access_log_destination_arn" {
+  description = "Optional CloudWatch log group ARN for HTTP API stage access logs."
+  type        = string
+  default     = null
+}
+
+variable "access_log_format" {
+  description = "Optional HTTP API stage access log format. Used only when access_log_destination_arn is set."
+  type        = string
+  default     = null
+}
+
 variable "integration_method" {
   description = "HTTP method used by the Cloud Map HTTP proxy integration."
   type        = string

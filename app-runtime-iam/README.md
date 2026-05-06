@@ -26,14 +26,13 @@ module "app_runtime_iam" {
   ]
 
   dynamodb_table_arn = module.dynamodb_single_table.table_arn
-
-  tags = {
-    Environment = var.environment
-  }
+  dynamodb_actions   = ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:DescribeTable"]
 }
 ```
 
 Role and policy names preserve the current reference-architecture shape: `${name}-ecs-execution-role`, `${name}-ecs-execution-ssm`, `${name}-ecs-task-role`, and `${name}-ecs-task-dynamodb`.
+
+Leave `dynamodb_actions` unset for the standard app table permissions. Pass an explicit list only when a consumer needs extra actions such as scans or batch reads.
 
 ## Migration Notes
 

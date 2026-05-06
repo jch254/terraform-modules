@@ -59,5 +59,14 @@ resource "aws_apigatewayv2_stage" "main" {
   name        = var.stage_name
   auto_deploy = var.auto_deploy
 
+  dynamic "access_log_settings" {
+    for_each = var.access_log_destination_arn == null ? [] : [1]
+
+    content {
+      destination_arn = var.access_log_destination_arn
+      format          = var.access_log_format
+    }
+  }
+
   tags = local.stage_tags
 }

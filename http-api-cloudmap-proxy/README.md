@@ -16,10 +16,8 @@ module "http_api_cloudmap_proxy" {
   subnet_ids                   = data.aws_subnets.public.ids
   vpc_link_security_group_ids  = [module.app_security_groups.vpc_link_security_group_id]
   cloudmap_service_arn         = module.cloudmap_private_service.service_arn
-
-  tags = {
-    Environment = var.environment
-  }
+  access_log_destination_arn   = aws_cloudwatch_log_group.api_gateway.arn
+  access_log_format            = local.api_access_log_format
 }
 ```
 

@@ -323,6 +323,7 @@ locals {
         "dynamodb:CreateTable",
         "dynamodb:DeleteTable",
         "dynamodb:DescribeTable",
+        "dynamodb:UpdateTable",
         "dynamodb:DescribeTimeToLive",
         "dynamodb:UpdateTimeToLive",
         "dynamodb:DescribeContinuousBackups",

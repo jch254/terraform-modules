@@ -43,6 +43,8 @@ module "http_api_cloudmap_proxy" {
   route_key                   = var.route_key
   stage_name                  = var.stage_name
   auto_deploy                 = var.auto_deploy
+  access_log_destination_arn  = var.access_log_destination_arn
+  access_log_format           = var.access_log_format
   integration_method          = var.integration_method
   tags                        = local.tags
 }

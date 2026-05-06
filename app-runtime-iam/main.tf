@@ -83,15 +83,7 @@ resource "aws_iam_role_policy" "ecs_task_dynamodb" {
     Statement = [
       {
         Effect = "Allow"
-        Action = [
-          "dynamodb:GetItem",
-          "dynamodb:PutItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",
-          "dynamodb:BatchWriteItem",
-          "dynamodb:Query",
-          "dynamodb:DescribeTable"
-        ]
+        Action = var.dynamodb_actions
         Resource = [
           var.dynamodb_table_arn,
           "${var.dynamodb_table_arn}/index/*"
