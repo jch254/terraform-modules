@@ -66,6 +66,7 @@ real apps
 | `acm-dns-validated-certificate` | ACM certificate and validation wait resource for DNS-validated app domains. |
 | `api-gateway-custom-domain` | API Gateway HTTP API custom domain and API mapping. |
 | `cloudflare-dns-records` | Generic Cloudflare DNS records module driven by a typed `records` map. Replaces the per-purpose ACM-validation, API-CNAME, SES-verification, and SES-inbound-MX modules. |
+| `cloudflare-response-headers` | Cloudflare response-header transform ruleset with a standard security-header baseline for static sites. |
 | `ses-domain-identity` | SES domain identity and Easy DKIM tokens for one domain. |
 | `ses-receipt-rule-set` | SES receipt rule set with opt-in active rule set ownership. |
 | `ses-receipt-rule` | SES receipt rule with S3 raw-mail action and app-specific Lambda action. |
@@ -134,9 +135,19 @@ The previous per-purpose Cloudflare DNS modules added a renamed variable shape o
 
 Consumers of the four removed modules must update their `source` to `cloudflare-dns-records` and run the `moved` blocks documented in the [cloudflare-dns-records README](cloudflare-dns-records/README.md) before applying. Apply must show no create, update, delete, or replace for moved records.
 
+Phase 8 adds a reusable Cloudflare response-header ruleset module:
+
+- `cloudflare-response-headers`
+
+The module keeps the standard static-site security headers in one place while
+letting consuming repos override individual header values or add extra headers.
+Consumers moving root-managed `cloudflare_ruleset` resources into the module
+must use the `moved` block documented in the
+[cloudflare-response-headers README](cloudflare-response-headers/README.md).
+
 `reference-architecture` is now the first full scaffold consumer of the current module set. It composes these modules into a runnable AWS + Cloudflare app scaffold while keeping application-specific configuration in the consuming repository.
 
-AWS modules and Cloudflare modules remain separate provider boundaries. AWS modules own AWS primitives such as ECR, DynamoDB, IAM, CloudWatch, Cloud Map, ECS, API Gateway, and ACM. Cloudflare modules own Cloudflare DNS records only, and consuming apps connect the two through outputs and remote state.
+AWS modules and Cloudflare modules remain separate provider boundaries. AWS modules own AWS primitives such as ECR, DynamoDB, IAM, CloudWatch, Cloud Map, ECS, API Gateway, and ACM. Cloudflare modules own Cloudflare edge resources such as DNS records and response-header rulesets, and consuming apps connect provider boundaries through outputs and remote state.
 
 App-specific config, secrets, domains, product logic, SES activation decisions, raw mail storage, forwarder Lambdas, mail provider records, Cloudflare security rules, tenant-specific routing, and other product infrastructure stay in consuming repos unless a focused reusable module is added later. Shared build notification infrastructure can be split between `build-notifier` in a shared platform repo and app-owned EventBridge subscriptions. For projects that already use `codebuild-project`, prefer that module's `build_notifier_lambda_function_arn` input over calling `build-notifier-project-subscription` separately.
 
@@ -240,6 +251,9 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.14.0`: `codebuild-terraform-role` supports regional CodeBuild assume-role principals and Lambda code-signing reads, `app-runtime-iam` includes DynamoDB `BatchWriteItem`, and `build-notifier` exposes `lambda_timeout` for adopting existing formatter Lambdas without timeout drift.
 - `1.15.0`: `ecs-http-service` and `http-api-cloudmap-proxy` can preserve HTTP API stage access logs, `app-runtime-iam` lets consumers override DynamoDB task-role actions for apps that need broader table/index access, and `codebuild-terraform-role` includes DynamoDB table updates.
 - `1.15.1`: `api-gateway-custom-domain` sanitizes the auto `Name` tag for wildcard domains (`*` → `wildcard`) so API Gateway v2 tag operations don't reject the value. Apex domains are unaffected; consumers passing an explicit `tags.Name` override continue to win.
+- `1.15.2`: `codebuild-project` recreates `aws_codebuild_webhook` when the CodeBuild project source URL changes.
+- `1.15.3`: `build-notifier` suppresses optional fields when their values are blank so notification messages avoid empty labels.
+- `1.16.0`: adds `cloudflare-response-headers`, a reusable Cloudflare response-header transform ruleset with static-site security-header defaults and a moved-block migration path for existing root-managed rulesets.
 - `1.15.2`: `codebuild-project` recreates `aws_codebuild_webhook` when the CodeBuild project source URL changes. This works around GitHub repository renames invalidating the underlying webhook while AWS CodeBuild and Terraform still report the webhook as present.
 
 ## License
