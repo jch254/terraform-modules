@@ -1,17 +1,36 @@
-# Web-app
+# web-app
+
+Static SPA hosting on S3 (private, BucketOwnerEnforced) fronted by a
+CloudFront distribution that authenticates to S3 via Origin Access Control.
+
+DNS is the caller's responsibility — the module exposes
+`cloudfront_domain_name` so the caller can wire up Route 53, Cloudflare, or
+any other DNS provider as a CNAME / alias.
+
+When `dns_names` is non-empty, the caller must pass a us-east-1 ACM
+certificate ARN covering all of those names. CloudFront will not accept
+custom aliases without one.
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|:----:|:-----:|:-----:|
-| acm\_arn | ARN of ACM SSL certificate | string | null | no |
-| bucket\_name | Name of deployment S3 bucket | string | n/a | yes |
-| dns\_names | List of DNS names for app | list(string) | `[]` | no |
-| route53\_zone\_id | Route 53 Hosted Zone ID | string | null | no |
+|------|-------------|------|---------|:--------:|
+| bucket_name | Deployment S3 bucket name and CloudFront origin id. | string | n/a | yes |
+| dns_names | CloudFront alias CNAMEs. | list(string) | `[]` | no |
+| acm_arn | us-east-1 ACM certificate ARN. Required when `dns_names` is non-empty. | string | `null` | conditional |
+| price_class | CloudFront price class. | string | `PriceClass_All` | no |
+| default_root_object | Object served at the distribution root. | string | `index.html` | no |
+| spa_fallback_path | Path returned with HTTP 200 for 403/404 responses (set empty to disable). | string | `/index.html` | no |
+| force_destroy | Force-destroy the S3 bucket on destroy. | bool | `true` | no |
+| tags | Additional resource tags. | map(string) | `{}` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| cloudfront\_distribution\_id |  |
-| s3\_bucket\_id |  |
+| s3_bucket_id | Deployment S3 bucket name. |
+| s3_bucket_arn | Deployment S3 bucket ARN. |
+| cloudfront_distribution_id | CloudFront distribution ID (use for invalidations). |
+| cloudfront_distribution_arn | CloudFront distribution ARN. |
+| cloudfront_domain_name | CloudFront distribution domain (CNAME target). |
+| cloudfront_hosted_zone_id | CloudFront global hosted zone ID for Route 53 alias records. |

@@ -251,10 +251,10 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.14.0`: `codebuild-terraform-role` supports regional CodeBuild assume-role principals and Lambda code-signing reads, `app-runtime-iam` includes DynamoDB `BatchWriteItem`, and `build-notifier` exposes `lambda_timeout` for adopting existing formatter Lambdas without timeout drift.
 - `1.15.0`: `ecs-http-service` and `http-api-cloudmap-proxy` can preserve HTTP API stage access logs, `app-runtime-iam` lets consumers override DynamoDB task-role actions for apps that need broader table/index access, and `codebuild-terraform-role` includes DynamoDB table updates.
 - `1.15.1`: `api-gateway-custom-domain` sanitizes the auto `Name` tag for wildcard domains (`*` → `wildcard`) so API Gateway v2 tag operations don't reject the value. Apex domains are unaffected; consumers passing an explicit `tags.Name` override continue to win.
-- `1.15.2`: `codebuild-project` recreates `aws_codebuild_webhook` when the CodeBuild project source URL changes.
+- `1.15.2`: `codebuild-project` recreates `aws_codebuild_webhook` when the CodeBuild project source URL changes. This works around GitHub repository renames invalidating the underlying webhook while AWS CodeBuild and Terraform still report the webhook as present.
 - `1.15.3`: `build-notifier` suppresses optional fields when their values are blank so notification messages avoid empty labels.
 - `1.16.0`: adds `cloudflare-response-headers`, a reusable Cloudflare response-header transform ruleset with static-site security-header defaults and a moved-block migration path for existing root-managed rulesets.
-- `1.15.2`: `codebuild-project` recreates `aws_codebuild_webhook` when the CodeBuild project source URL changes. This works around GitHub repository renames invalidating the underlying webhook while AWS CodeBuild and Terraform still report the webhook as present.
+- `1.17.0`: modernised web-app module.
 
 ## License
 
