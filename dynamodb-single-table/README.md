@@ -57,6 +57,8 @@ module "entities" {
 | `global_secondary_indexes` | Global secondary indexes to create on the table. | `list(object)` | `[]` | no |
 | `ttl_enabled` | Whether DynamoDB TTL is enabled. | `bool` | `true` | no |
 | `ttl_attribute_name` | Attribute name used for TTL. | `string` | `"ttl"` | no |
+| `point_in_time_recovery_enabled` | Whether point-in-time recovery (continuous backups, ~35-day restore window) is enabled. | `bool` | `true` | no |
+| `deletion_protection_enabled` | Whether table deletion protection is enabled. | `bool` | `true` | no |
 | `tags` | Tags to apply to the table. | `map(string)` | `{}` | no |
 
 ## Outputs

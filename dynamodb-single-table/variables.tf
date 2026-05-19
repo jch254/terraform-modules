@@ -63,6 +63,18 @@ variable "ttl_attribute_name" {
   default     = "ttl"
 }
 
+variable "point_in_time_recovery_enabled" {
+  description = "Whether DynamoDB point-in-time recovery (continuous backups, ~35-day restore window) is enabled. Defaults on for data safety."
+  type        = bool
+  default     = true
+}
+
+variable "deletion_protection_enabled" {
+  description = "Whether table deletion protection is enabled, preventing accidental table destroy via Terraform or console. Defaults on for data safety."
+  type        = bool
+  default     = true
+}
+
 variable "tags" {
   description = "Tags to apply to the table."
   type        = map(string)
