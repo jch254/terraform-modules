@@ -8,10 +8,11 @@ locals {
 }
 
 resource "aws_dynamodb_table" "main" {
-  name         = var.name
-  billing_mode = var.billing_mode
-  hash_key     = var.hash_key
-  range_key    = var.range_key
+  name                        = var.name
+  billing_mode                = var.billing_mode
+  hash_key                    = var.hash_key
+  range_key                   = var.range_key
+  deletion_protection_enabled = var.deletion_protection_enabled
 
   dynamic "attribute" {
     for_each = var.attributes
@@ -37,6 +38,10 @@ resource "aws_dynamodb_table" "main" {
   ttl {
     attribute_name = var.ttl_attribute_name
     enabled        = var.ttl_enabled
+  }
+
+  point_in_time_recovery {
+    enabled = var.point_in_time_recovery_enabled
   }
 
   tags = local.tags
