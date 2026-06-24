@@ -58,10 +58,12 @@ real apps
 | `codebuild-project` | Standalone CodeBuild project module, with optional app-owned subscription to the shared build notifier and webhook replacement when the source repository URL changes. |
 | `app-log-group` | CloudWatch application log group for ECS runtime logs. Kept for compatibility; new ECS Fargate consumers can let `ecs-fargate-service` create the log group directly. |
 | `app-runtime-iam` | ECS task execution role, task role, and runtime IAM policies. |
+| `lambda-runtime-iam` | Single IAM execution role for a container-image Lambda; the Lambda-trust analogue of `app-runtime-iam`, with CloudWatch Logs, app DynamoDB, and optional scoped SSM/KMS access. |
 | `app-security-groups` | API Gateway VPC Link and ECS task security groups. |
 | `cloudmap-private-service` | Cloud Map private DNS namespace and service for ECS service discovery. |
 | `ecs-fargate-service` | ECS Fargate cluster, task definition, service, and optional application log group. |
 | `ecs-http-service` | Composite ECS HTTP runtime: security groups, Cloud Map, HTTP API proxy, ECS Fargate service, and optional application log group. |
+| `lambda-http-service` | Container-image Lambda fronted by an API Gateway HTTP API with a Lambda proxy integration. Mirrors the `ecs-http-service` HTTP surface (`api_id`/`stage_id`/`api_endpoint`) with no VPC Link, Cloud Map, or security groups, so the same custom-domain and DNS layer composes against either compute backend. |
 | `http-api-cloudmap-proxy` | API Gateway HTTP API, VPC Link, Cloud Map integration, route, and stage. |
 | `acm-dns-validated-certificate` | ACM certificate and validation wait resource for DNS-validated app domains. |
 | `api-gateway-custom-domain` | API Gateway HTTP API custom domain and API mapping. |
@@ -255,6 +257,8 @@ Tags this repo has shipped. See [Tags and versioning](#tags-and-versioning) for 
 - `1.15.3`: `build-notifier` suppresses optional fields when their values are blank so notification messages avoid empty labels.
 - `1.16.0`: adds `cloudflare-response-headers`, a reusable Cloudflare response-header transform ruleset with static-site security-header defaults and a moved-block migration path for existing root-managed rulesets.
 - `1.17.0`: modernised web-app module.
+- `1.18.0`: `dynamodb-single-table` gains point-in-time recovery and deletion protection, both defaulting **on** for data safety. Bumping existing consumers to `1.18.0` enables both on already-deployed tables — an in-place `~ change` (no recreation). Pass `point_in_time_recovery_enabled = false` / `deletion_protection_enabled = false` to keep prior behaviour.
+- `1.19.0`: adds `lambda-http-service` (container-image Lambda behind an API Gateway HTTP API proxy, mirroring the `ecs-http-service` HTTP surface) and `lambda-runtime-iam` (single container-image Lambda execution role, the Lambda-trust analogue of `app-runtime-iam`), giving a serverless compute backend that reuses the existing custom-domain and DNS layer.
 
 ## License
 
