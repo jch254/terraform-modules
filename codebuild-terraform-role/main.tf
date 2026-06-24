@@ -308,6 +308,21 @@ locals {
     }
   ]
 
+  # Allow decrypting SecureString parameters. Scoped via kms:ViaService so the
+  # key can only be used through SSM, not for arbitrary decryption.
+  ssm_kms_statements = length(local.effective_ssm_parameter_arns) == 0 ? [] : [
+    {
+      Effect   = "Allow"
+      Action   = ["kms:Decrypt"]
+      Resource = ["*"]
+      Condition = {
+        StringEquals = {
+          "kms:ViaService" = "ssm.${local.region}.amazonaws.com"
+        }
+      }
+    }
+  ]
+
   secretsmanager_statements = length(var.secretsmanager_secret_arns) == 0 ? [] : [
     {
       Effect   = "Allow"
@@ -449,6 +464,7 @@ locals {
     local.sts_statements,
     local.codebuild_statements,
     local.ssm_statements,
+    local.ssm_kms_statements,
     local.secretsmanager_statements,
     local.dynamodb_statements,
     local.ses_statements,
