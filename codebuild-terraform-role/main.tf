@@ -342,6 +342,7 @@ locals {
         "dynamodb:DescribeTimeToLive",
         "dynamodb:UpdateTimeToLive",
         "dynamodb:DescribeContinuousBackups",
+        "dynamodb:UpdateContinuousBackups",
         "dynamodb:ListTagsOfResource",
         "dynamodb:TagResource",
         "dynamodb:UntagResource",
